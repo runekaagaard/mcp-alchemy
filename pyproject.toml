@@ -5,7 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "mcp[cli]===1.2.0rc1",
+    "mcp[cli]>=1.2.0rc1",
     "psycopg2-binary>=2.9.10",
     "pymysql>=1.1.1",
     "sqlalchemy>=2.0.36",
