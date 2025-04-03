@@ -2,7 +2,7 @@
 
 **Status: Works great and is in daily use without any known bugs.**
 
-**Status2: I just added the package to PYPI and updated the usage instructions. Please report any issues :)** 
+**Status2: I just added the package to PyPI and updated the usage instructions. Please report any issues :)**
 
 Let Claude be your database expert! MCP Alchemy connects Claude Desktop directly to your databases, allowing it to:
 
@@ -103,7 +103,7 @@ Add to your `claude_desktop_config.json`. You need to add the appropriate databa
 }
 ```
 
-Environment Variables:
+## Environment Variables
 
 - `DB_URL`: SQLAlchemy [database URL](https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls) (required)
 - `CLAUDE_LOCAL_FILES_PATH`: Directory for full result sets (optional)
