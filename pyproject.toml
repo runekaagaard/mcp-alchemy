@@ -11,7 +11,7 @@ dependencies = [
     "sqlalchemy>=2.0.36",
 ]
 [project.scripts]
-mcp-alchemy = "server:main"
+mcp-alchemy = "mcp_alchemy:main"
 
 [tool.uv]
 package = true
