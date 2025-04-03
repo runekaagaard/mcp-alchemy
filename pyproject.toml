@@ -3,7 +3,7 @@ name = "mcp-alchemy"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.10"
 dependencies = [
     "mcp[cli]>=1.2.0rc1",
     "psycopg2-binary>=2.9.10",

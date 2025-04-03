@@ -48,7 +48,7 @@ Works with PostgreSQL, MySQL, MariaDB, SQLite, Oracle, MS SQL Server and a host 
       id: INTEGER, primary key, autoincrement
       email: VARCHAR(255), nullable
       created_at: DATETIME
-      
+
       Relationships:
         id -> orders.user_id
   ```
@@ -83,8 +83,8 @@ Add to your `claude_desktop_config.json`:
 {
   "mcpServers": {
     "my_database": {
-      "command": "uv",
-      "args": ["--directory", "/path/to/mcp-alchemy", "run", "server.py"],
+      "command": "uvx",
+      "args": ["--from", "git+https://github.com/runekaagaard/mcp-alchemy", "mcp-alchemy"],
       "env": {
         "DB_URL": "mysql+pymysql://root:secret@localhost/databasename",
       }
@@ -162,4 +162,4 @@ The goal is to make database interaction with Claude even better, and your insig
 
 ## License
 
-Mozilla Public License Version 2.0 
+Mozilla Public License Version 2.0
