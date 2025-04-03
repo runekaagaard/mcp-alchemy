@@ -10,7 +10,7 @@ Let Claude be your database expert! MCP Alchemy connects Claude Desktop directly
 - Analyze large datasets and create reports
 - Claude Desktop Can analyse and create artifacts for very large datasets using [claude-local-files](https://github.com/runekaagaard/claude-local-files).
 
-Works with PostgreSQL, MySQL, MariaDB, SQLite, Oracle, MS SQL Server and a host of other [SQLAlchemy-compatible](https://docs.sqlalchemy.org/en/20/dialects/) databases.
+Works with PostgreSQL, MySQL, MariaDB, SQLite, Oracle, MS SQL Server, CrateDB and a host of other [SQLAlchemy-compatible](https://docs.sqlalchemy.org/en/20/dialects/) databases.
 
 ![MCP Alchemy in action](screenshot.png)
 
@@ -101,6 +101,7 @@ Environment Variables:
   - MySQL: `mysql+pymysql://user:password@localhost/dbname`
   - MariaDB: `mariadb+pymysql://user:password@localhost/dbname`
   - SQLite: `sqlite:///path/to/database.db`
+  - CrateDB: `crate://crate@localhost:4200/?schema=testdrive`
 - `CLAUDE_LOCAL_FILES_PATH`: Directory for full result sets (optional)
 - `EXECUTE_QUERY_MAX_CHARS`: Maximum output length (optional, default 4000)
 
@@ -133,6 +134,12 @@ uv pip install pymssql
 
 # Oracle
 uv pip install cx_oracle
+
+# PostgreSQL
+uv pip install 'psycopg2-binary'
+
+# CrateDB
+uv pip install 'sqlalchemy-cratedb>=0.42.0.dev1'
 
 # Other databases
 # See: https://docs.sqlalchemy.org/en/20/dialects/
