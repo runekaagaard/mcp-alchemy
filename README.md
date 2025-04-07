@@ -2,6 +2,9 @@
 
 **Status: Works great and is in daily use without any known bugs.**
 
+**Status 2: I'm currently working on publishing it to PYPI and finding the most userfriendly way to run it with uvx, so inspect installation instructions to change during the next couple of weeks.**
+
+
 Let Claude be your database expert! MCP Alchemy connects Claude Desktop directly to your databases, allowing it to:
 
 - Help you explore and understand your database structure
@@ -84,7 +87,7 @@ Add to your `claude_desktop_config.json`:
   "mcpServers": {
     "my_database": {
       "command": "uv",
-      "args": ["--directory", "/path/to/mcp-alchemy", "run", "server.py"],
+      "args": ["--directory", "/path/to/mcp-alchemy", "run", "mcp_alchemy.py"],
       "env": {
         "DB_URL": "mysql+pymysql://root:secret@localhost/databasename",
       }
