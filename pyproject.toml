@@ -1,17 +1,31 @@
 [project]
 name = "mcp-alchemy"
-version = "0.1.0"
-description = "Add your description here"
+version = "1.0.1"
+description = "A MCP server that connects to your database"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.10"
 dependencies = [
     "mcp[cli]>=1.2.0rc1",
-    "psycopg2-binary>=2.9.10",
-    "pymysql>=1.1.1",
     "sqlalchemy>=2.0.36",
 ]
+authors = [
+  { name="Rune Kaagaard" },
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+license = "MPL2.0"
+license-files = ["LICENSE"]
+
 [project.scripts]
 mcp-alchemy = "mcp_alchemy:main"
+
+[project.urls]
+Homepage = "https://github.com/runekaagaard/mcp-alchemy"
+Issues = "https://github.com/runekaagaard/mcp-alchemy/issues"
+Disussions = "https://github.com/runekaagaard/mcp-alchemy/discussions"
+
 
 [tool.uv]
 package = true
