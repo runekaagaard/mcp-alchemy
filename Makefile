@@ -18,6 +18,7 @@ publish-prod:
 	uv publish --token "$$PYPI_TOKEN_PROD"
 	sed -i 's/mcp-alchemy==[0-9.]*"/mcp-alchemy==$(VERSION)"/g' README.md
 	git commit -am "Publishing version $(VERSION) to pypi"
+	git push
 
 package-inspect-test:
 	rm -rf /tmp/test-mcp-alchemy
