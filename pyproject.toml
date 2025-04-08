@@ -15,8 +15,10 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
 ]
-license = "MPL2.0"
 license-files = ["LICENSE"]
+packages = [
+    {include = "mcp_alchemy"}
+]
 
 [project.scripts]
 mcp-alchemy = "mcp_alchemy:main"
@@ -26,6 +28,15 @@ Homepage = "https://github.com/runekaagaard/mcp-alchemy"
 Issues = "https://github.com/runekaagaard/mcp-alchemy/issues"
 Disussions = "https://github.com/runekaagaard/mcp-alchemy/discussions"
 
+[build-system]
+requires = ["hatchling >= 1.26"]
+build-backend = "hatchling.build"
 
 [tool.uv]
 package = true
+
+[dependency-groups]
+dev = [
+    "build>=1.2.2.post1",
+    "hatchling>=1.27.0",
+]
