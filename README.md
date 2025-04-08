@@ -2,7 +2,7 @@
 
 **Status: Works great and is in daily use without any known bugs.**
 
-**Status2: I just add the package to PYPI and updated the installation instructions. Please report any issues :)** 
+**Status2: I just added the package to PYPI and updated the usage instructions. Please report any issues :)** 
 
 Let Claude be your database expert! MCP Alchemy connects Claude Desktop directly to your databases, allowing it to:
 
