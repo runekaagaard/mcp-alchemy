@@ -37,3 +37,7 @@ package-run-test:
 
 package-run-prod:
 	uvx --from mcp-alchemy mcp-alchemy
+
+readme-update-version:
+	$(eval VERSION := $(shell cat VERSION.txt))
+	sed -i 's/mcp-alchemy==[0-9.]*"/mcp-alchemy=$(VERSION)"/g' README.md
