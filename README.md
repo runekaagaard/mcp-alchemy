@@ -86,8 +86,8 @@ Add to your `claude_desktop_config.json`:
 {
   "mcpServers": {
     "my_database": {
-      "command": "uv",
-      "args": ["--directory", "/path/to/mcp-alchemy", "run", "mcp_alchemy.py"],
+      "command": "uvx",
+      "args": ["--from", "mcp-alchemy==[VERSION]", "--with", "[DATABASE_DRIVER]", "mcp-alchemy"],
       "env": {
         "DB_URL": "mysql+pymysql://root:secret@localhost/databasename",
       }
