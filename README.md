@@ -2,9 +2,6 @@
 
 **Status: Works great and is in daily use without any known bugs.**
 
-**Status 2: I'm currently working on publishing it to PYPI and finding the most userfriendly way to run it with uvx, so inspect installation instructions to change during the next couple of weeks.**
-
-
 Let Claude be your database expert! MCP Alchemy connects Claude Desktop directly to your databases, allowing it to:
 
 - Help you explore and understand your database structure
@@ -16,6 +13,99 @@ Let Claude be your database expert! MCP Alchemy connects Claude Desktop directly
 Works with PostgreSQL, MySQL, MariaDB, SQLite, Oracle, MS SQL Server and a host of other [SQLAlchemy-compatible](https://docs.sqlalchemy.org/en/20/dialects/) databases.
 
 ![MCP Alchemy in action](screenshot.png)
+
+## Installation
+
+Ensure you have uv installed:
+```bash
+# Install uv if you haven't already
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+## Usage with Claude Desktop
+
+Add to your `claude_desktop_config.json`. You need to install the appropriate database driver alongside mcp-alchemy.
+
+### SQLite (built into Python)
+```json
+{
+  "mcpServers": {
+    "my_sqlite_db": {
+      "command": "uvx",
+      "args": ["--from", "mcp-alchemy", "mcp-alchemy"],
+      "env": {
+        "DB_URL": "sqlite:///path/to/database.db"
+      }
+    }
+  }
+}
+```
+
+### PostgreSQL
+```json
+{
+  "mcpServers": {
+    "my_postgres_db": {
+      "command": "uvx",
+      "args": ["--from", "mcp-alchemy", "--with", "psycopg2-binary", "mcp-alchemy"],
+      "env": {
+        "DB_URL": "postgresql://user:password@localhost/dbname"
+      }
+    }
+  }
+}
+```
+
+### MySQL/MariaDB
+```json
+{
+  "mcpServers": {
+    "my_mysql_db": {
+      "command": "uvx",
+      "args": ["--from", "mcp-alchemy", "--with", "pymysql", "mcp-alchemy"],
+      "env": {
+        "DB_URL": "mysql+pymysql://user:password@localhost/dbname"
+      }
+    }
+  }
+}
+```
+
+### Microsoft SQL Server
+```json
+{
+  "mcpServers": {
+    "my_mssql_db": {
+      "command": "uvx",
+      "args": ["--from", "mcp-alchemy", "--with", "pymssql", "mcp-alchemy"],
+      "env": {
+        "DB_URL": "mssql+pymssql://user:password@localhost/dbname"
+      }
+    }
+  }
+}
+```
+
+### Oracle
+```json
+{
+  "mcpServers": {
+    "my_oracle_db": {
+      "command": "uvx",
+      "args": ["--from", "mcp-alchemy", "--with", "cx_oracle", "mcp-alchemy"],
+      "env": {
+        "DB_URL": "oracle+cx_oracle://user:password@localhost/dbname"
+      }
+    }
+  }
+}
+```
+
+Environment Variables:
+
+- `DB_URL`: SQLAlchemy [database URL](https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls) (required)
+- `CLAUDE_LOCAL_FILES_PATH`: Directory for full result sets (optional)
+- `EXECUTE_QUERY_MAX_CHARS`: Maximum output length (optional, default 4000)
 
 ## API
 
@@ -77,69 +167,6 @@ Works with PostgreSQL, MySQL, MariaDB, SQLite, Oracle, MS SQL Server and a host 
     - Clean NULL value display
     - ISO formatted dates
     - Clear row separation
-
-## Usage with Claude Desktop
-
-Add to your `claude_desktop_config.json`:
-
-```json
-{
-  "mcpServers": {
-    "my_database": {
-      "command": "uvx",
-      "args": ["--from", "mcp-alchemy==[VERSION]", "--with", "[DATABASE_DRIVER]", "mcp-alchemy"],
-      "env": {
-        "DB_URL": "mysql+pymysql://root:secret@localhost/databasename",
-      }
-    }
-  }
-}
-```
-
-Environment Variables:
-
-- `DB_URL`: SQLAlchemy [database URL](https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls) (required)
-  Examples:
-  - PostgreSQL: `postgresql://user:password@localhost/dbname`
-  - MySQL: `mysql+pymysql://user:password@localhost/dbname`
-  - MariaDB: `mariadb+pymysql://user:password@localhost/dbname`
-  - SQLite: `sqlite:///path/to/database.db`
-- `CLAUDE_LOCAL_FILES_PATH`: Directory for full result sets (optional)
-- `EXECUTE_QUERY_MAX_CHARS`: Maximum output length (optional, default 4000)
-
-## Installation
-
-1. Clone repository:
-```bash
-git clone https://github.com/runekaagaard/mcp-alchemy.git
-```
-
-2. Ensure you have uv
-```bash
-# Install uv if you haven't already
-curl -LsSf https://astral.sh/uv/install.sh | sh
-```
-
-3. Add database to claude_desktop_config.json (see above)
-
-## Database Drivers
-
-The following database drivers are included by default:
-- SQLite: Built into Python, no additional installation needed
-- MySQL/MariaDB: Via `pymysql`
-- PostgreSQL: Via `psycopg2-binary`
-
-To use other databases supported by SQLAlchemy, install the appropriate driver:
-```bash
-# Microsoft SQL Server
-uv pip install pymssql
-
-# Oracle
-uv pip install cx_oracle
-
-# Other databases
-# See: https://docs.sqlalchemy.org/en/20/dialects/
-```
 
 ## Claude Local Files
 
