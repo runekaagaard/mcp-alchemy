@@ -2,6 +2,8 @@
 
 **Status: Works great and is in daily use without any known bugs.**
 
+**Status2: I just add the package to PYPI and updated the installation instructions. Please report any issues :)** 
+
 Let Claude be your database expert! MCP Alchemy connects Claude Desktop directly to your databases, allowing it to:
 
 - Help you explore and understand your database structure
@@ -24,7 +26,7 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 
 ## Usage with Claude Desktop
 
-Add to your `claude_desktop_config.json`. You need to install the appropriate database driver alongside mcp-alchemy.
+Add to your `claude_desktop_config.json`. You need to add the appropriate database driver in the ``--with`` parameter.
 
 ### SQLite (built into Python)
 ```json
