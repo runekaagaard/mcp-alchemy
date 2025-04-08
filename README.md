@@ -14,7 +14,7 @@ Let Claude be your database expert! MCP Alchemy connects Claude Desktop directly
 
 Works with PostgreSQL, MySQL, MariaDB, SQLite, Oracle, MS SQL Server and a host of other [SQLAlchemy-compatible](https://docs.sqlalchemy.org/en/20/dialects/) databases.
 
-![MCP Alchemy in action](screenshot.png)
+![MCP Alchemy in action](https://raw.githubusercontent.com/runekaagaard/mcp-alchemy/refs/heads/main/screenshot.png)
 
 ## Installation
 
