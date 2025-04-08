@@ -16,7 +16,7 @@ publish-prod:
 	sed -i "s/version = \"[^\"]*\"/version = \"$(VERSION)\"/" pyproject.toml
 	uv build
 	uv publish --token "$$PYPI_TOKEN_PROD"
-	sed -i 's/mcp-alchemy==[0-9.]*"/mcp-alchemy=$(VERSION)"/g' README.md
+	sed -i 's/mcp-alchemy==[0-9.]*"/mcp-alchemy==$(VERSION)"/g' README.md
 	git commit -am "Publishing version $(VERSION) to pypi"
 
 package-inspect-test:
