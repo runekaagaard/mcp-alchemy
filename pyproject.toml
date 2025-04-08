@@ -1,6 +1,6 @@
 [project]
 name = "mcp-alchemy"
-version = "2025.04.08.210012"
+version = "2025.04.08.211910"
 description = "A MCP server that connects to your database"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -29,7 +29,7 @@ Issues = "https://github.com/runekaagaard/mcp-alchemy/issues"
 Disussions = "https://github.com/runekaagaard/mcp-alchemy/discussions"
 
 [build-system]
-requires = ["hatchling >= 1.26"]
+requires = ["hatchling>=1.27"]
 build-backend = "hatchling.build"
 
 [tool.uv]
