@@ -2,7 +2,7 @@
 
 **Status: Works great and is in daily use without any known bugs.**
 
-**Status2: I just added the package to PYPI and updated the usage instructions. Please report any issues :)** 
+**Status2: I just added the package to PyPI and updated the usage instructions. Please report any issues :)**
 
 Let Claude be your database expert! MCP Alchemy connects Claude Desktop directly to your databases, allowing it to:
 
@@ -12,7 +12,8 @@ Let Claude be your database expert! MCP Alchemy connects Claude Desktop directly
 - Analyze large datasets and create reports
 - Claude Desktop Can analyse and create artifacts for very large datasets using [claude-local-files](https://github.com/runekaagaard/claude-local-files).
 
-Works with PostgreSQL, MySQL, MariaDB, SQLite, Oracle, MS SQL Server and a host of other [SQLAlchemy-compatible](https://docs.sqlalchemy.org/en/20/dialects/) databases.
+Works with PostgreSQL, MySQL, MariaDB, SQLite, Oracle, MS SQL Server, CrateDB,
+and a host of other [SQLAlchemy-compatible](https://docs.sqlalchemy.org/en/20/dialects/) databases.
 
 ![MCP Alchemy in action](https://raw.githubusercontent.com/runekaagaard/mcp-alchemy/refs/heads/main/screenshot.png)
 
@@ -103,7 +104,24 @@ Add to your `claude_desktop_config.json`. You need to add the appropriate databa
 }
 ```
 
-Environment Variables:
+### CrateDB
+```json
+{
+  "mcpServers": {
+    "my_cratedb": {
+      "command": "uvx",
+      "args": ["--from", "mcp-alchemy~=2025.04", "--with", "sqlalchemy-cratedb>=0.42.0.dev1", "mcp-alchemy"],
+      "env": {
+        "DB_URL": "crate://user:password@localhost:4200/?schema=testdrive"
+      }
+    }
+  }
+}
+```
+For connecting to CrateDB Cloud, use a URL like
+`crate://user:password@example.aks1.westeurope.azure.cratedb.net:4200?ssl=true`.
+
+## Environment Variables
 
 - `DB_URL`: SQLAlchemy [database URL](https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls) (required)
 - `CLAUDE_LOCAL_FILES_PATH`: Directory for full result sets (optional)
