@@ -1,7 +1,7 @@
 SHELL := /bin/bash
 .SHELLFLAGS := -ec
 
-.PHONY: publish-test package-inspect-test package-run-test publish-prod
+.PHONY: publish-test publish-prod package-inspect-test package-inspect-prod package-run-test package-run-prod
 
 VERSION := $(shell date +%Y.%m.%d.%H%M%S)
 
