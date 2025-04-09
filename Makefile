@@ -3,14 +3,15 @@ SHELL := /bin/bash
 
 .PHONY: publish-test package-inspect-test package-run-test publish-prod
 
-# Create a variable at Make level (not shell level)
 VERSION := $(shell date +%Y.%m.%d.%H%M%S)
 
 publish-test:
 	rm -rf dist/*
-	sed -i "s/version = \"[^\"]*\"/version = \"$(shell date +%Y.%m.%d.%H%M%S)\"/" pyproject.toml
+	sed -i "s/version = \"[^\"]*\"/version = \"$(VERSION)\"/" pyproject.toml
+	sed -i "s/mcp-alchemy==[0-9.]*\"/mcp-alchemy==$(VERSION)\"/g" README.md
 	uv build
 	uv publish --token "$$PYPI_TOKEN_TEST" --publish-url https://test.pypi.org/legacy/
+	git checkout README.md pyproject.toml
 
 publish-prod:
 	rm -rf dist/*
@@ -19,7 +20,7 @@ publish-prod:
 	sed -i "s/mcp-alchemy==[0-9.]*\"/mcp-alchemy==$(VERSION)\"/g" README.md
 	uv build
 	uv publish --token "$$PYPI_TOKEN_PROD"
-	git commit -am "Publishing version $(VERSION) to pypi"
+	git commit -am "Published version $(VERSION) to PyPI"
 	git push
 
 package-inspect-test:
