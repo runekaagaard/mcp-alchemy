@@ -110,7 +110,7 @@ Add to your `claude_desktop_config.json`. You need to add the appropriate databa
   "mcpServers": {
     "my_cratedb": {
       "command": "uvx",
-      "args": ["--from", "mcp-alchemy~=2025.04", "--with", "sqlalchemy-cratedb>=0.42.0.dev1", "mcp-alchemy"],
+      "args": ["--from", "mcp-alchemy==2025.04.09.091042", "--with", "sqlalchemy-cratedb>=0.42.0.dev1", "mcp-alchemy"],
       "env": {
         "DB_URL": "crate://user:password@localhost:4200/?schema=testdrive"
       }
