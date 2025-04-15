@@ -35,7 +35,8 @@ Add to your `claude_desktop_config.json`. You need to add the appropriate databa
   "mcpServers": {
     "my_sqlite_db": {
       "command": "uvx",
-      "args": ["--from", "mcp-alchemy==2025.04.15.221253", "mcp-alchemy"],
+      "args": ["--from", "mcp-alchemy==2025.04.15.221253",
+               "--refresh-package", "mcp-alchemy", "mcp-alchemy"],
       "env": {
         "DB_URL": "sqlite:///path/to/database.db"
       }
@@ -50,7 +51,8 @@ Add to your `claude_desktop_config.json`. You need to add the appropriate databa
   "mcpServers": {
     "my_postgres_db": {
       "command": "uvx",
-      "args": ["--from", "mcp-alchemy==2025.04.15.221253", "--with", "psycopg2-binary", "mcp-alchemy"],
+      "args": ["--from", "mcp-alchemy==2025.04.15.221253", "--with", "psycopg2-binary",
+               "--refresh-package", "mcp-alchemy", "mcp-alchemy"],
       "env": {
         "DB_URL": "postgresql://user:password@localhost/dbname"
       }
@@ -65,7 +67,8 @@ Add to your `claude_desktop_config.json`. You need to add the appropriate databa
   "mcpServers": {
     "my_mysql_db": {
       "command": "uvx",
-      "args": ["--from", "mcp-alchemy==2025.04.15.221253", "--with", "pymysql", "mcp-alchemy"],
+      "args": ["--from", "mcp-alchemy==2025.04.15.221253", "--with", "pymysql",
+               "--refresh-package", "mcp-alchemy", "mcp-alchemy"],
       "env": {
         "DB_URL": "mysql+pymysql://user:password@localhost/dbname"
       }
@@ -80,7 +83,8 @@ Add to your `claude_desktop_config.json`. You need to add the appropriate databa
   "mcpServers": {
     "my_mssql_db": {
       "command": "uvx",
-      "args": ["--from", "mcp-alchemy==2025.04.15.221253", "--with", "pymssql", "mcp-alchemy"],
+      "args": ["--from", "mcp-alchemy==2025.04.15.221253", "--with", "pymssql",
+               "--refresh-package", "mcp-alchemy", "mcp-alchemy"],
       "env": {
         "DB_URL": "mssql+pymssql://user:password@localhost/dbname"
       }
@@ -95,7 +99,8 @@ Add to your `claude_desktop_config.json`. You need to add the appropriate databa
   "mcpServers": {
     "my_oracle_db": {
       "command": "uvx",
-      "args": ["--from", "mcp-alchemy==2025.04.15.221253", "--with", "cx_oracle", "mcp-alchemy"],
+      "args": ["--from", "mcp-alchemy==2025.04.15.221253", "--with", "cx_oracle",
+               "--refresh-package", "mcp-alchemy", "mcp-alchemy"],
       "env": {
         "DB_URL": "oracle+cx_oracle://user:password@localhost/dbname"
       }
@@ -110,7 +115,8 @@ Add to your `claude_desktop_config.json`. You need to add the appropriate databa
   "mcpServers": {
     "my_cratedb": {
       "command": "uvx",
-      "args": ["--from", "mcp-alchemy==2025.04.15.221253", "--with", "sqlalchemy-cratedb>=0.42.0.dev1", "mcp-alchemy"],
+      "args": ["--from", "mcp-alchemy==2025.04.15.221253", "--with", "sqlalchemy-cratedb>=0.42.0.dev1",
+               "--refresh-package", "mcp-alchemy", "mcp-alchemy"],
       "env": {
         "DB_URL": "crate://user:password@localhost:4200/?schema=testdrive"
       }
