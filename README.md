@@ -221,7 +221,7 @@ Clone the github repository, install the dependencies and your database driver o
 ```
 ...
 "command": "uv",
-"args": ["run", "--directory", "/home/r/ws/mcp-alchemy", "-m", "mcp_alchemy.server", "main"],
+"args": ["run", "--directory", "/path/to/mcp-alchemy", "-m", "mcp_alchemy.server", "main"],
 ...
 ```
 
