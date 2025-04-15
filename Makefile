@@ -5,19 +5,21 @@ SHELL := /bin/bash
 
 VERSION := $(shell date +%Y.%m.%d.%H%M%S)
 
-publish-test:
-	rm -rf dist/*
+version-bump:
+	sed -i "s/VERSION = \"[^\"]*\"/VERSION = \"$(VERSION)\"/" mcp_alchemy/server.py
 	sed -i "s/version = \"[^\"]*\"/version = \"$(VERSION)\"/" pyproject.toml
 	sed -i "s/mcp-alchemy==[0-9.]*\"/mcp-alchemy==$(VERSION)\"/g" README.md
+
+publish-test:
+	rm -rf dist/*
+	$(MAKE) version-bump
 	uv build
 	uv publish --token "$$PYPI_TOKEN_TEST" --publish-url https://test.pypi.org/legacy/
 	git checkout README.md pyproject.toml
 
 publish-prod:
 	rm -rf dist/*
-	echo "$(VERSION)" > VERSION.txt
-	sed -i "s/version = \"[^\"]*\"/version = \"$(VERSION)\"/" pyproject.toml
-	sed -i "s/mcp-alchemy==[0-9.]*\"/mcp-alchemy==$(VERSION)\"/g" README.md
+	$(MAKE) version-bump
 	uv build
 	uv publish --token "$$PYPI_TOKEN_PROD"
 	git commit -am "Published version $(VERSION) to PyPI"

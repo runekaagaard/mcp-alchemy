@@ -1,7 +1,10 @@
 import os, json, hashlib
 from typing import Optional
 from datetime import datetime, date
-from mcp.server.fastmcp import FastMCP
+
+from mcp.server.fastmcp import FastMCP, Context
+from mcp.server.fastmcp.utilities.logging import get_logger
+
 from sqlalchemy import create_engine, inspect, text
 
 ### Database ###
@@ -21,6 +24,7 @@ def get_db_info():
 
 ### Constants ###
 
+VERSION = "2025.04.15.214942"
 DB_INFO = get_db_info()
 EXECUTE_QUERY_MAX_CHARS = int(os.environ.get('EXECUTE_QUERY_MAX_CHARS', 4000))
 CLAUDE_FILES_PATH = os.environ.get('CLAUDE_LOCAL_FILES_PATH')
@@ -28,6 +32,7 @@ CLAUDE_FILES_PATH = os.environ.get('CLAUDE_LOCAL_FILES_PATH')
 ### MCP ###
 
 mcp = FastMCP("MCP Alchemy")
+get_logger(__name__).info(f"Starting MCP Alchemy version {VERSION}")
 
 @mcp.tool(description=f"Return all table names in the database separated by comma. {DB_INFO}")
 def all_table_names() -> str:
@@ -163,10 +168,8 @@ def execute_query(query: str, params: Optional[dict] = None) -> str:
     except Exception as e:
         return f"Error: {str(e)}"
 
-
 def main():
     mcp.run()
-
 
 if __name__ == "__main__":
     main()
