@@ -8,7 +8,7 @@ VERSION := $(shell date +%Y.%m.%d.%H%M%S)
 version-bump:
 	sed -i "s/VERSION = \"[^\"]*\"/VERSION = \"$(VERSION)\"/" mcp_alchemy/server.py
 	sed -i "s/version = \"[^\"]*\"/version = \"$(VERSION)\"/" pyproject.toml
-	sed -i "s/mcp-alchemy==[0-9.]*\"/mcp-alchemy==$(VERSION)\"/g" README.md
+	sed -i "s/mcp-alchemy==[0-9.]*\"/mcp-alchemy==$(VERSION)\"/g" README.md ~/.config/Claude/claude_desktop_config.json
 
 publish-test:
 	rm -rf dist/*
