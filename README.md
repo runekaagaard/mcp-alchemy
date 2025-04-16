@@ -29,6 +29,9 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 
 Add to your `claude_desktop_config.json`. You need to add the appropriate database driver in the ``--with`` parameter.
 
+_Note: After a new version release there might be a period of up to 600 seconds while the cache clears locally 
+cached causing uv to raise a versioning error. Restarting the MCP client once again solves the error._
+
 ### SQLite (built into Python)
 ```json
 {
@@ -205,6 +208,26 @@ When [claude-local-files](https://github.com/runekaagaard/claude-local-files) is
 
 The integration automatically activates when `CLAUDE_LOCAL_FILES_PATH` is set.
 
+## Developing
+
+First clone the github repository, install the dependencies and your database driver(s) of choice:
+
+```
+git clone git@github.com:runekaagaard/mcp-alchemy.git
+cd mcp-alchemy
+uv sync
+uv pip install psycopg2-binary
+```
+
+Then set this in claude_desktop_config.json:
+
+```
+...
+"command": "uv",
+"args": ["run", "--directory", "/path/to/mcp-alchemy", "-m", "mcp_alchemy.server", "main"],
+...
+```
+
 ## Contributing
 
 Contributions are warmly welcomed! Whether it's bug reports, feature requests, documentation improvements, or code contributions - all input is valuable. Feel free to:
@@ -219,17 +242,6 @@ The goal is to make database interaction with Claude even better, and your insig
 ## License
 
 Mozilla Public License Version 2.0
-
-## Developing
-
-Clone the github repository, install the dependencies and your database driver of choice, then set this in claude_desktop_config.json:
-
-```
-...
-"command": "uv",
-"args": ["run", "--directory", "/path/to/mcp-alchemy", "-m", "mcp_alchemy.server", "main"],
-...
-```
 
 ## My Other LLM Projects
 
