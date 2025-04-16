@@ -1,6 +1,6 @@
 [project]
 name = "mcp-alchemy"
-version = "2025.04.16.101343"
+version = "2025.04.16.103515"
 description = "A MCP server that connects to your database"
 readme = "README.md"
 requires-python = ">=3.10"

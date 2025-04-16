@@ -21,6 +21,7 @@ publish-prod:
 	rm -rf dist/*
 	$(MAKE) version-bump
 	uv build
+	uv lock
 	uv publish --token "$$PYPI_TOKEN_PROD"
 	git commit -am "Published version $(VERSION) to PyPI"
 	git push

@@ -24,7 +24,7 @@ def get_db_info():
 
 ### Constants ###
 
-VERSION = "2025.04.16.101343"
+VERSION = "2025.04.16.103515"
 DB_INFO = get_db_info()
 EXECUTE_QUERY_MAX_CHARS = int(os.environ.get('EXECUTE_QUERY_MAX_CHARS', 4000))
 CLAUDE_FILES_PATH = os.environ.get('CLAUDE_LOCAL_FILES_PATH')
