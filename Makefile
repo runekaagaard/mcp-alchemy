@@ -49,5 +49,3 @@ package-run-test:
 
 package-run-prod:
 	uvx --from mcp-alchemy mcp-alchemy
-
-.PHONY: publish-test publish-prod package-inspect-test package-inspect-prod package-run-test package-run-prod
