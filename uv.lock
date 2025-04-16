@@ -254,7 +254,7 @@ cli = [
 
 [[package]]
 name = "mcp-alchemy"
-version = "2025.4.16.103515"
+version = "2025.4.16.105708"
 source = { editable = "." }
 dependencies = [
     { name = "mcp", extra = ["cli"] },
