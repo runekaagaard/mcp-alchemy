@@ -1,17 +1,17 @@
 SHELL := /bin/bash
 .SHELLFLAGS := -ec
 
-PROJECT := "mcp-alchemy" # overloads as binary name, too
-PACKAGE := "mcp_alchemy"
-VERSION := $(shell date +%Y.%m.%d.%H%M%S)
+PROJECT := $(shell sed -n 's/^name = "\(.*\)"/\1/p' pyproject.toml) # overloads as binary name, too
+PACKAGE := $(shell sed -n 's/^name = "\(.*\)"/\1/p' pyproject.toml | tr '-' '_')
+VERSION := $(shell date +%Y.%m.%d.%H%M%S | sed 's/\.0\+/\./g')
 
 version-bump:
-	sed -i "s/mcp-alchemy==[0-9.]*\"/mcp-alchemy==$(VERSION)\"/g" README.md
+	sed -i "s/$(PROJECT)==[0-9.]*\"/$(PROJECT)==$(VERSION)\"/g" README.md
 	sed -i "s/version = \"[^\"]*\"/version = \"$(VERSION)\"/" pyproject.toml
 	sed -i "s/VERSION = \"[^\"]*\"/VERSION = \"$(VERSION)\"/" $(PACKAGE)/server.py
 
 version-bump-claude-desktop:
-	sed -i "s/mcp-alchemy==[0-9.]*\"/mcp-alchemy==$(VERSION)\"/g" ~/.config/Claude/claude_desktop_config.json
+	sed -i "s/$(PROJECT)==[0-9.]*\"/$(PROJECT)==$(VERSION)\"/g" ~/.config/Claude/claude_desktop_config.json
 
 publish-test:
 	rm -rf dist/*
@@ -31,21 +31,21 @@ publish-prod:
 	git push
 
 package-inspect-test:
-	rm -rf /tmp/test-mcp-alchemy
-	uv venv /tmp/test-mcp-alchemy --python 3.12
-	source /tmp/test-mcp-alchemy/bin/activate && uv pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ mcp-alchemy
-	tree /tmp/test-mcp-alchemy/lib/python3.12/site-packages/$(PACKAGE)
-	source /tmp/test-mcp-alchemy/bin/activate && which $(PROJECT)
+	rm -rf /tmp/test-$(PROJECT)
+	uv venv /tmp/test-$(PROJECT) --python 3.12
+	source /tmp/test-$(PROJECT)/bin/activate && uv pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ $(PROJECT)
+	tree /tmp/test-$(PROJECT)/lib/python3.12/site-packages/$(PACKAGE)
+	source /tmp/test-$(PROJECT)/bin/activate && which $(PROJECT)
 
 package-inspect-prod:
-	rm -rf /tmp/test-mcp-alchemy
-	uv venv /tmp/test-mcp-alchemy --python 3.12
-	source /tmp/test-mcp-alchemy/bin/activate && uv pip install mcp-alchemy
-	tree /tmp/test-mcp-alchemy/lib/python3.12/site-packages/$(PACKAGE)
-	source /tmp/test-mcp-alchemy/bin/activate && which $(PROJECT)
+	rm -rf /tmp/test-$(PROJECT)
+	uv venv /tmp/test-$(PROJECT) --python 3.12
+	source /tmp/test-$(PROJECT)/bin/activate && uv pip install $(PROJECT)
+	tree /tmp/test-$(PROJECT)/lib/python3.12/site-packages/$(PACKAGE)
+	source /tmp/test-$(PROJECT)/bin/activate && which $(PROJECT)
 
 package-run-test:
-	uvx --default-index https://test.pypi.org/simple/ --index https://pypi.org/simple/ --from mcp-alchemy mcp-alchemy
+	uvx --default-index https://test.pypi.org/simple/ --index https://pypi.org/simple/ --from $(PROJECT) $(PROJECT)
 
 package-run-prod:
-	uvx --from mcp-alchemy mcp-alchemy
+	uvx --from $(PROJECT) $(PROJECT)
