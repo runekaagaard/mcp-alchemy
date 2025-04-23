@@ -2,7 +2,7 @@ SHELL := /bin/bash
 .SHELLFLAGS := -ec
 
 PROJECT := $(shell sed -n 's/^name = "\(.*\)"/\1/p' pyproject.toml) # overloads as binary name, too
-PACKAGE := $(shell sed -n 's/^name = "\(.*\)"/\1/p' pyproject.toml | tr '-' '_')
+PACKAGE := $(shell echo $(PROJECT) | tr '-' '_')
 VERSION := $(shell date +%Y.%m.%d.%H%M%S | sed 's/\.0\+/\./g')
 
 version-bump:

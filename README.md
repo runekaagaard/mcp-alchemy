@@ -41,7 +41,7 @@ cached causing uv to raise a versioning error. Restarting the MCP client once ag
       "args": ["--from", "mcp-alchemy==2025.04.16.110003",
                "--refresh-package", "mcp-alchemy", "mcp-alchemy"],
       "env": {
-        "DB_URL": "sqlite:///path/to/database.db"
+        "DB_URL": "sqlite:////absolute/path/to/database.db"
       }
     }
   }
