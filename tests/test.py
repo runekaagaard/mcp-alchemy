@@ -1,4 +1,4 @@
-from mcp_alchemy.server import execute_query
+from mcp_alchemy.server import *
 
 d = dict
 
@@ -7,7 +7,50 @@ def h1(s):
     print("=" * len(s))
     print()
 
-RESULT1 = """
+GDI1 = """
+Connected to sqlite version 3.37.2 database tests/Chinook_Sqlite.sqlite.
+"""
+
+ATN1 = "Album, Artist, Customer, Employee, Genre, Invoice, InvoiceLine, MediaType, Playlist, PlaylistTrack, Track"
+
+FTN1 = "MediaType, Playlist, PlaylistTrack, Track"
+
+SD1 = """
+Customer:
+    CustomerId: primary key, INTEGER, primary_key=1
+    FirstName: NVARCHAR(40)
+    LastName: NVARCHAR(20)
+    Company: NVARCHAR(80), nullable
+    Address: NVARCHAR(70), nullable
+    City: NVARCHAR(40), nullable
+    State: NVARCHAR(40), nullable
+    Country: NVARCHAR(40), nullable
+    PostalCode: NVARCHAR(10), nullable
+    Phone: NVARCHAR(24), nullable
+    Fax: NVARCHAR(24), nullable
+    Email: NVARCHAR(60)
+    SupportRepId: INTEGER, nullable
+
+    Relationships:
+      SupportRepId -> Employee.EmployeeId
+Track:
+    TrackId: primary key, INTEGER, primary_key=1
+    Name: NVARCHAR(200)
+    AlbumId: INTEGER, nullable
+    MediaTypeId: INTEGER
+    GenreId: INTEGER, nullable
+    Composer: NVARCHAR(220), nullable
+    Milliseconds: INTEGER
+    Bytes: INTEGER, nullable
+    UnitPrice: NUMERIC(10, 2)
+
+    Relationships:
+      MediaTypeId -> MediaType.MediaTypeId
+      GenreId -> Genre.GenreId
+      AlbumId -> Album.AlbumId
+"""
+
+EQ1 = """
 1. row
 AlbumId: 1
 Title: For Those About To Rock We Salute You
@@ -21,7 +64,7 @@ ArtistId: 2
 Result: 2 rows
 """
 
-RESULT2 = """
+EQ2 = """
 1. row
 CustomerId: 1
 FirstName: Luís
@@ -250,13 +293,13 @@ SupportRepId: 3
 Result: 59 rows (output truncated)
 """
 
-RESULT3 = """
+EQ3 = """
 Error: (sqlite3.OperationalError) no such column: id
 [SQL: SELECT * FROM Customer WHERE id=1]
 (Background on this error at: https://sqlalche.me/e/20/e3q8)
 """
 
-RESULT4 = """
+EQ4 = """
 1. row
 AlbumId: 5
 Title: Big Ones
@@ -270,18 +313,22 @@ def test_func(func, tests):
         wanted_result = wanted_result.strip()
         actual_result = func(*args)
         if actual_result != wanted_result:
-            print(f"{func.__name}({args})")
+            print(f"{func.__name__}({args})")
             h1("Wanted result")
             print(wanted_result)
             h1("Actual result")
             print(actual_result)
 
 def main():
+    test_func(get_db_info, [([], GDI1)])
+    test_func(all_table_names, [([], ATN1)])
+    test_func(filter_table_names, [(["a"], FTN1)])
+    test_func(schema_definitions, [([["Customer", "Track"]], SD1)])
     test_func(execute_query, [
-        (["SELECT * FROM Album LIMIT 2"], RESULT1),
-        (["SELECT * FROM Customer"], RESULT2),
-        (["SELECT * FROM Customer WHERE id=1"], RESULT3),
-        (["SELECT * FROM Album WHERE AlbumId=:AlbumId", d(AlbumId=5)], RESULT4),
+        (["SELECT * FROM Album LIMIT 2"], EQ1),
+        (["SELECT * FROM Customer"], EQ2),
+        (["SELECT * FROM Customer WHERE id=1"], EQ3),
+        (["SELECT * FROM Album WHERE AlbumId=:AlbumId", d(AlbumId=5)], EQ4),
     ])
 
 if __name__ == "__main__":

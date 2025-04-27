@@ -17,10 +17,19 @@ def get_db_info():
     engine = get_engine(readonly=True)
     with engine.connect() as conn:
         url = engine.url
-        return (f"Connected to {engine.dialect.name} "
-                f"version {'.'.join(str(x) for x in engine.dialect.server_version_info)} "
-                f"database '{url.database}' on {url.host} "
-                f"as user '{url.username}'")
+        result = [
+            f"Connected to {engine.dialect.name}",
+            f"version {'.'.join(str(x) for x in engine.dialect.server_version_info)}",
+            f"database {url.database}",
+        ]
+
+        if url.host:
+            result.append(f"on {url.host}")
+
+        if url.username:
+            result.append(f"as user {url.username}")
+
+        return " ".join(result) + "."
 
 ### Constants ###
 
