@@ -265,21 +265,24 @@ ArtistId: 3
 Result: 1 rows
 """
 
-def main():
-    for query, query_params, wanted_result in [
-        ("SELECT * FROM Album LIMIT 2", None, RESULT1),
-        ("SELECT * FROM Customer", None, RESULT2),
-        ("SELECT * FROM Customer WHERE id=1", None, RESULT3),
-        ("SELECT * FROM Album WHERE AlbumId=:AlbumId", d(AlbumId=5), RESULT4),
-    ]:
+def test_func(func, tests):
+    for args, wanted_result in tests:
         wanted_result = wanted_result.strip()
-        actual_result = execute_query(query, query_params)
+        actual_result = func(*args)
         if actual_result != wanted_result:
-            print("Query:", query)
+            print(f"{func.__name}({args})")
             h1("Wanted result")
             print(wanted_result)
             h1("Actual result")
             print(actual_result)
+
+def main():
+    test_func(execute_query, [
+        (["SELECT * FROM Album LIMIT 2"], RESULT1),
+        (["SELECT * FROM Customer"], RESULT2),
+        (["SELECT * FROM Customer WHERE id=1"], RESULT3),
+        (["SELECT * FROM Album WHERE AlbumId=:AlbumId", d(AlbumId=5)], RESULT4),
+    ])
 
 if __name__ == "__main__":
     main()
