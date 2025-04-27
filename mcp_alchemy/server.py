@@ -157,7 +157,7 @@ def execute_query(query: str, params: Optional[dict] = None) -> str:
             row_displayed, output = format_results(columns, all_rows)
 
             # Add summary and full results link
-            output += f"\nResult: {len(all_rows)} rows"
+            output += f"Result: {len(all_rows)} rows"
             if row_displayed < len(all_rows):
                 output += " (output truncated)"
 
