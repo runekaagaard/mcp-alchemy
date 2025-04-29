@@ -4,11 +4,6 @@ from mcp_alchemy.server import *
 
 d = dict
 
-def h1(s):
-    print(s)
-    print("=" * len(s))
-    print()
-
 GDI1 = """
 Connected to sqlite version 3.37.2 database tests/Chinook_Sqlite.sqlite.
 """
@@ -320,6 +315,11 @@ ArtistId: 1
 
 Result: 2 rows (output truncated)
 """
+
+def h1(s):
+    print(s)
+    print("=" * len(s))
+    print()
 
 def diff(wanted_result, actual_result):
     """Show git-like diff between two strings."""
