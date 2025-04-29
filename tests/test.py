@@ -350,6 +350,10 @@ def main():
         (["SELECT * FROM Customer"], EQ2),
         (["SELECT * FROM Customer WHERE id=1"], EQ3),
         (["SELECT * FROM Album WHERE AlbumId=:AlbumId", d(AlbumId=5)], EQ4),
+        (["SELECT * FROM Album WHERE AlbumId=:AlbumId",
+          d(AlbumId=-1)], "No rows returned"),
+        (["UPDATE Album SET AlbumId=:AlbumId WHERE AlbumId=:AlbumId",
+          d(AlbumId=-1)], "Success: 0 rows affected"),
     ])
 
     # EXECUTE_QUERY_MAX_CHARS setting
