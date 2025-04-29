@@ -339,7 +339,6 @@ def test_func(func, tests):
             print(actual_result)
             h1("Diff")
             print(diff(wanted_result, actual_result))
-            kfoweoefk
 
 def main():
     test_func(get_db_info, [([], GDI1)])
