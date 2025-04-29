@@ -1,3 +1,5 @@
+import shutil, os
+
 from mcp_alchemy.server import *
 
 d = dict
@@ -293,6 +295,8 @@ SupportRepId: 3
 Result: 59 rows (output truncated)
 """
 
+EQ2B = EQ2 + "Full result set url: https://cdn.jsdelivr.net/pyodide/claude-local-files/38d911af2df61f48ae5850491aaa32aff40569233d6aa2a870960a45108067ff.json (format: [[row1_value1, row1_value2, ...], [row2_value1, row2_value2, ...], ...]]) (ALWAYS prefer fetching this url in artifacts instead of hardcoding the values if at all possible)"
+
 EQ3 = """
 Error: (sqlite3.OperationalError) no such column: id
 [SQL: SELECT * FROM Customer WHERE id=1]
@@ -306,6 +310,15 @@ Title: Big Ones
 ArtistId: 3
 
 Result: 1 rows
+"""
+
+EQMC1 = """
+1. row
+AlbumId: 1
+Title: For Those About To Rock We Salute You
+ArtistId: 1
+
+Result: 2 rows (output truncated)
 """
 
 def test_func(func, tests):
@@ -330,6 +343,23 @@ def main():
         (["SELECT * FROM Customer WHERE id=1"], EQ3),
         (["SELECT * FROM Album WHERE AlbumId=:AlbumId", d(AlbumId=5)], EQ4),
     ])
+
+    # EXECUTE_QUERY_MAX_CHARS setting
+    tmp = EXECUTE_QUERY_MAX_CHARS
+    tests_set_global("EXECUTE_QUERY_MAX_CHARS", 100)
+    test_func(execute_query, [
+        (["SELECT * FROM Album LIMIT 2"], EQMC1),
+    ])
+    tests_set_global("EXECUTE_QUERY_MAX_CHARS", tmp)
+
+    # CLAUDE_LOCAL_FILES_PATH setting
+    path = "/tmp/mcp-alchemey/claude-local-files"
+    os.makedirs(path, exist_ok=True)
+    tests_set_global("CLAUDE_LOCAL_FILES_PATH", path)
+    test_func(execute_query, [
+        (["SELECT * FROM Customer"], EQ2B),
+    ])
+    shutil.rmtree(path)
 
 if __name__ == "__main__":
     main()

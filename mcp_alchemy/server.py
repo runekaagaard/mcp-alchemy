@@ -7,6 +7,11 @@ from mcp.server.fastmcp.utilities.logging import get_logger
 
 from sqlalchemy import create_engine, inspect, text
 
+### Helpers ###
+
+def tests_set_global(k, v):
+    globals()[k] = v
+
 ### Database ###
 
 def get_engine(readonly=True):
@@ -36,7 +41,7 @@ def get_db_info():
 VERSION = "2025.4.23.194321"
 DB_INFO = get_db_info()
 EXECUTE_QUERY_MAX_CHARS = int(os.environ.get('EXECUTE_QUERY_MAX_CHARS', 4000))
-CLAUDE_FILES_PATH = os.environ.get('CLAUDE_LOCAL_FILES_PATH')
+CLAUDE_LOCAL_FILES_PATH = os.environ.get('CLAUDE_LOCAL_FILES_PATH')
 
 ### MCP ###
 
@@ -94,7 +99,7 @@ def execute_query_description():
     parts = [
         f"Execute a SQL query and return results in a readable format. Results will be truncated after {EXECUTE_QUERY_MAX_CHARS} characters."
     ]
-    if CLAUDE_FILES_PATH:
+    if CLAUDE_LOCAL_FILES_PATH:
         parts.append("Claude Desktop may fetch the full result set via an url for analysis and artifacts.")
     parts.append(DB_INFO)
     return " ".join(parts)
@@ -130,7 +135,7 @@ def execute_query(query: str, params: Optional[dict] = None) -> str:
 
     def save_full_results(rows, columns):
         """Save complete result set for Claude if configured"""
-        if not CLAUDE_FILES_PATH:
+        if not CLAUDE_LOCAL_FILES_PATH:
             return ""
 
         def serialize_row(row):
@@ -140,7 +145,7 @@ def execute_query(query: str, params: Optional[dict] = None) -> str:
         file_hash = hashlib.sha256(json.dumps(data).encode()).hexdigest()
         file_name = f"{file_hash}.json"
 
-        with open(os.path.join(CLAUDE_FILES_PATH, file_name), 'w') as f:
+        with open(os.path.join(CLAUDE_LOCAL_FILES_PATH, file_name), 'w') as f:
             json.dump(data, f)
 
         return (
