@@ -105,7 +105,7 @@ def execute_query_description():
     return " ".join(parts)
 
 @mcp.tool(description=execute_query_description())
-def execute_query(query: str, params: Optional[dict] = None) -> str:
+def execute_query(query: str, params: Optional[dict] = {}) -> str:
     def format_value(val):
         """Format a value for display, handling None and datetime types"""
         if val is None:
@@ -164,7 +164,7 @@ def execute_query(query: str, params: Optional[dict] = None) -> str:
     try:
         engine = get_engine(readonly=False)
         with engine.connect() as connection:
-            result = connection.execute(text(query), params or {})
+            result = connection.execute(text(query), params)
 
             if not result.returns_rows:
                 return f"Success: {result.rowcount} rows affected"
