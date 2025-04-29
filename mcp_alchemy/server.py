@@ -20,7 +20,7 @@ def get_engine(readonly=True):
 
 def get_db_info():
     engine = get_engine(readonly=True)
-    with engine.connect() as conn:
+    with engine.connect():
         url = engine.url
         result = [
             f"Connected to {engine.dialect.name}",
@@ -114,29 +114,37 @@ def execute_query(query: str, params: Optional[dict] = None) -> str:
             return val.isoformat()
         return str(val)
 
-    def format_results(columns, rows):
+    def format_result(columns, rows):
         """Format rows in a clean vertical format"""
-        output = ""
-        curr_size, row_displayed = 0, 0
+        result = []
+        size, prev_i = 0, 0
 
         for i, row in enumerate(rows, 1):
-            line = f"{i}. row\n"
+            sub_result = []
+            sub_result.append(f"{i}. row")
             for col, val in zip(columns, row):
-                line += f"{col}: {format_value(val)}\n"
-            line += "\n"
-            curr_size += len(line)
+                sub_result.append(f"{col}: {format_value(val)}")
 
-            if curr_size > EXECUTE_QUERY_MAX_CHARS:
+            sub_result.append("")
+
+            size += sum(len(x) + 1 for x in sub_result)  # +1 is for the line ending
+
+            if size > EXECUTE_QUERY_MAX_CHARS:
                 break
-            output += line
-            row_displayed = i
 
-        return row_displayed, output
+            result.extend(sub_result)
+
+            prev_i = i
+
+        truncation = " (output truncated)" if prev_i < len(all_rows) else ""
+        result.append(f"Result: {len(all_rows)} rows{truncation}")
+
+        return result
 
     def save_full_results(rows, columns):
         """Save complete result set for Claude if configured"""
         if not CLAUDE_LOCAL_FILES_PATH:
-            return ""
+            return None
 
         def serialize_row(row):
             return [format_value(val) for val in row]
@@ -149,7 +157,7 @@ def execute_query(query: str, params: Optional[dict] = None) -> str:
             json.dump(data, f)
 
         return (
-            f"\nFull result set url: https://cdn.jsdelivr.net/pyodide/claude-local-files/{file_name}"
+            f"Full result set url: https://cdn.jsdelivr.net/pyodide/claude-local-files/{file_name}"
             " (format: [[row1_value1, row1_value2, ...], [row2_value1, row2_value2, ...], ...]])"
             " (ALWAYS prefer fetching this url in artifacts instead of hardcoding the values if at all possible)")
 
@@ -167,18 +175,12 @@ def execute_query(query: str, params: Optional[dict] = None) -> str:
             if not all_rows:
                 return "No rows returned"
 
-            # Format results and handle truncation if needed
-            row_displayed, output = format_results(columns, all_rows)
-
-            # Add summary and full results link
-            output += f"Result: {len(all_rows)} rows"
-            if row_displayed < len(all_rows):
-                output += " (output truncated)"
+            output = format_result(columns, all_rows)
 
             if full_results := save_full_results(all_rows, columns):
-                output += full_results
+                output.append(full_results)
 
-            return output
+            return "\n".join(output)
     except Exception as e:
         return f"Error: {str(e)}"
 

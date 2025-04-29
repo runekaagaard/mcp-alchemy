@@ -1,4 +1,4 @@
-import shutil, os
+import shutil, os, difflib
 
 from mcp_alchemy.server import *
 
@@ -321,6 +321,12 @@ ArtistId: 1
 Result: 2 rows (output truncated)
 """
 
+def diff(wanted_result, actual_result):
+    """Show git-like diff between two strings."""
+    return ''.join(
+        difflib.unified_diff(wanted_result.splitlines(keepends=True), actual_result.splitlines(keepends=True),
+                             fromfile='wanted_result', tofile='actual_result', n=3))
+
 def test_func(func, tests):
     for args, wanted_result in tests:
         wanted_result = wanted_result.strip()
@@ -331,6 +337,9 @@ def test_func(func, tests):
             print(wanted_result)
             h1("Actual result")
             print(actual_result)
+            h1("Diff")
+            print(diff(wanted_result, actual_result))
+            kfoweoefk
 
 def main():
     test_func(get_db_info, [([], GDI1)])
@@ -353,13 +362,13 @@ def main():
     tests_set_global("EXECUTE_QUERY_MAX_CHARS", tmp)
 
     # CLAUDE_LOCAL_FILES_PATH setting
-    path = "/tmp/mcp-alchemey/claude-local-files"
-    os.makedirs(path, exist_ok=True)
-    tests_set_global("CLAUDE_LOCAL_FILES_PATH", path)
+    tmp = "/tmp/mcp-alchemy/claude-local-files"
+    os.makedirs(tmp, exist_ok=True)
+    tests_set_global("CLAUDE_LOCAL_FILES_PATH", tmp)
     test_func(execute_query, [
         (["SELECT * FROM Customer"], EQ2B),
     ])
-    shutil.rmtree(path)
+    shutil.rmtree(tmp)
 
 if __name__ == "__main__":
     main()
