@@ -14,12 +14,9 @@ def tests_set_global(k, v):
 
 ### Database ###
 
-def get_engine(readonly=True):
-    connection_string = os.environ['DB_URL']
-    return create_engine(connection_string, isolation_level='AUTOCOMMIT', execution_options={'readonly': readonly})
+engine = create_engine(os.environ['DB_URL'], isolation_level='AUTOCOMMIT', pool_pre_ping=True)
 
 def get_db_info():
-    engine = get_engine(readonly=True)
     with engine.connect():
         url = engine.url
         result = [
@@ -50,17 +47,17 @@ get_logger(__name__).info(f"Starting MCP Alchemy version {VERSION}")
 
 @mcp.tool(description=f"Return all table names in the database separated by comma. {DB_INFO}")
 def all_table_names() -> str:
-    engine = get_engine()
-    inspector = inspect(engine)
-    return ", ".join(inspector.get_table_names())
+    with engine.connect():
+        inspector = inspect(engine)
+        return ", ".join(inspector.get_table_names())
 
 @mcp.tool(
     description=f"Return all table names in the database containing the substring 'q' separated by comma. {DB_INFO}"
 )
 def filter_table_names(q: str) -> str:
-    engine = get_engine()
-    inspector = inspect(engine)
-    return ", ".join(x for x in inspector.get_table_names() if q in x)
+    with engine.connect():
+        inspector = inspect(engine)
+        return ", ".join(x for x in inspector.get_table_names() if q in x)
 
 @mcp.tool(description=f"Returns schema and relation information for the given tables. {DB_INFO}")
 def schema_definitions(table_names: list[str]) -> str:
@@ -91,9 +88,9 @@ def schema_definitions(table_names: list[str]) -> str:
 
         return "\n".join(result)
 
-    engine = get_engine()
-    inspector = inspect(engine)
-    return "\n".join(format(inspector, table_name) for table_name in table_names)
+    with engine.connect():
+        inspector = inspect(engine)
+        return "\n".join(format(inspector, table_name) for table_name in table_names)
 
 def execute_query_description():
     parts = [
@@ -101,11 +98,14 @@ def execute_query_description():
     ]
     if CLAUDE_LOCAL_FILES_PATH:
         parts.append("Claude Desktop may fetch the full result set via an url for analysis and artifacts.")
+    parts.append(
+        "IMPORTANT: Always use the params parameter for query parameter substitution (e.g. 'WHERE id = :id' with params={'id': 123}) to prevent SQL injection. Direct string concatenation is a serious security risk."
+    )
     parts.append(DB_INFO)
     return " ".join(parts)
 
 @mcp.tool(description=execute_query_description())
-def execute_query(query: str, params: Optional[dict] = {}) -> str:
+def execute_query(query: str, params: dict = {}) -> str:
     def format_value(val):
         """Format a value for display, handling None and datetime types"""
         if val is None:
@@ -176,7 +176,6 @@ def execute_query(query: str, params: Optional[dict] = {}) -> str:
             " (ALWAYS prefer fetching this url in artifacts instead of hardcoding the values if at all possible)")
 
     try:
-        engine = get_engine(readonly=False)
         with engine.connect() as connection:
             cursor_result = connection.execute(text(query), params)
 
