@@ -101,11 +101,14 @@ def execute_query_description():
     ]
     if CLAUDE_LOCAL_FILES_PATH:
         parts.append("Claude Desktop may fetch the full result set via an url for analysis and artifacts.")
+    parts.append(
+        "IMPORTANT: Always use the params parameter for query parameter substitution (e.g. 'WHERE id = :id' with "
+        "params={'id': 123}) to prevent SQL injection. Direct string concatenation is a serious security risk.")
     parts.append(DB_INFO)
     return " ".join(parts)
 
 @mcp.tool(description=execute_query_description())
-def execute_query(query: str, params: Optional[dict] = {}) -> str:
+def execute_query(query: str, params: dict = {}) -> str:
     def format_value(val):
         """Format a value for display, handling None and datetime types"""
         if val is None:
