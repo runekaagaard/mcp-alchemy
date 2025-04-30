@@ -49,3 +49,6 @@ package-run-test:
 
 package-run-prod:
 	uvx --from $(PROJECT) $(PROJECT)
+
+tests-run:
+	DB_URL="sqlite:///tests/Chinook_Sqlite.sqlite" .venv/bin/python -m tests.test

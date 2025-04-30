@@ -7,6 +7,11 @@ from mcp.server.fastmcp.utilities.logging import get_logger
 
 from sqlalchemy import create_engine, inspect, text
 
+### Helpers ###
+
+def tests_set_global(k, v):
+    globals()[k] = v
+
 ### Database ###
 
 def get_engine(readonly=True):
@@ -15,19 +20,28 @@ def get_engine(readonly=True):
 
 def get_db_info():
     engine = get_engine(readonly=True)
-    with engine.connect() as conn:
+    with engine.connect():
         url = engine.url
-        return (f"Connected to {engine.dialect.name} "
-                f"version {'.'.join(str(x) for x in engine.dialect.server_version_info)} "
-                f"database '{url.database}' on {url.host} "
-                f"as user '{url.username}'")
+        result = [
+            f"Connected to {engine.dialect.name}",
+            f"version {'.'.join(str(x) for x in engine.dialect.server_version_info)}",
+            f"database {url.database}",
+        ]
+
+        if url.host:
+            result.append(f"on {url.host}")
+
+        if url.username:
+            result.append(f"as user {url.username}")
+
+        return " ".join(result) + "."
 
 ### Constants ###
 
 VERSION = "2025.4.23.194321"
 DB_INFO = get_db_info()
 EXECUTE_QUERY_MAX_CHARS = int(os.environ.get('EXECUTE_QUERY_MAX_CHARS', 4000))
-CLAUDE_FILES_PATH = os.environ.get('CLAUDE_LOCAL_FILES_PATH')
+CLAUDE_LOCAL_FILES_PATH = os.environ.get('CLAUDE_LOCAL_FILES_PATH')
 
 ### MCP ###
 
@@ -85,13 +99,16 @@ def execute_query_description():
     parts = [
         f"Execute a SQL query and return results in a readable format. Results will be truncated after {EXECUTE_QUERY_MAX_CHARS} characters."
     ]
-    if CLAUDE_FILES_PATH:
+    if CLAUDE_LOCAL_FILES_PATH:
         parts.append("Claude Desktop may fetch the full result set via an url for analysis and artifacts.")
+    parts.append(
+        "IMPORTANT: Always use the params parameter for query parameter substitution (e.g. 'WHERE id = :id' with "
+        "params={'id': 123}) to prevent SQL injection. Direct string concatenation is a serious security risk.")
     parts.append(DB_INFO)
     return " ".join(parts)
 
 @mcp.tool(description=execute_query_description())
-def execute_query(query: str, params: Optional[dict] = None) -> str:
+def execute_query(query: str, params: dict = {}) -> str:
     def format_value(val):
         """Format a value for display, handling None and datetime types"""
         if val is None:
@@ -100,71 +117,81 @@ def execute_query(query: str, params: Optional[dict] = None) -> str:
             return val.isoformat()
         return str(val)
 
-    def format_results(columns, rows):
+    def format_result(cursor_result):
         """Format rows in a clean vertical format"""
-        output = ""
-        curr_size, row_displayed = 0, 0
+        result, full_results = [], []
+        size, i, did_truncate = 0, 0, False
 
-        for i, row in enumerate(rows, 1):
-            line = f"{i}. row\n"
-            for col, val in zip(columns, row):
-                line += f"{col}: {format_value(val)}\n"
-            line += "\n"
-            curr_size += len(line)
+        i = 0
+        while row := cursor_result.fetchone():
+            i += 1
+            if CLAUDE_LOCAL_FILES_PATH:
+                full_results.append(row)
+            if did_truncate:
+                continue
 
-            if curr_size > EXECUTE_QUERY_MAX_CHARS:
-                break
-            output += line
-            row_displayed = i
+            sub_result = []
+            sub_result.append(f"{i}. row")
+            for col, val in zip(cursor_result.keys(), row):
+                sub_result.append(f"{col}: {format_value(val)}")
 
-        return row_displayed, output
+            sub_result.append("")
 
-    def save_full_results(rows, columns):
+            size += sum(len(x) + 1 for x in sub_result)  # +1 is for line endings
+
+            if size > EXECUTE_QUERY_MAX_CHARS:
+                did_truncate = True
+                if not CLAUDE_LOCAL_FILES_PATH:
+                    break
+            else:
+                result.extend(sub_result)
+
+        if i == 0:
+            return ["No rows returned"], full_results
+        elif did_truncate:
+            if CLAUDE_LOCAL_FILES_PATH:
+                result.append(f"Result: {i} rows (output truncated)")
+            else:
+                result.append(f"Result: showing first {i-1} rows (output truncated)")
+            return result, full_results
+        else:
+            result.append(f"Result: {i} rows")
+            return result, full_results
+
+    def save_full_results(full_results):
         """Save complete result set for Claude if configured"""
-        if not CLAUDE_FILES_PATH:
-            return ""
+        if not CLAUDE_LOCAL_FILES_PATH:
+            return None
 
         def serialize_row(row):
             return [format_value(val) for val in row]
 
-        data = [serialize_row(row) for row in rows]
+        data = [serialize_row(row) for row in full_results]
         file_hash = hashlib.sha256(json.dumps(data).encode()).hexdigest()
         file_name = f"{file_hash}.json"
 
-        with open(os.path.join(CLAUDE_FILES_PATH, file_name), 'w') as f:
+        with open(os.path.join(CLAUDE_LOCAL_FILES_PATH, file_name), 'w') as f:
             json.dump(data, f)
 
         return (
-            f"\nFull result set url: https://cdn.jsdelivr.net/pyodide/claude-local-files/{file_name}"
+            f"Full result set url: https://cdn.jsdelivr.net/pyodide/claude-local-files/{file_name}"
             " (format: [[row1_value1, row1_value2, ...], [row2_value1, row2_value2, ...], ...]])"
             " (ALWAYS prefer fetching this url in artifacts instead of hardcoding the values if at all possible)")
 
     try:
         engine = get_engine(readonly=False)
         with engine.connect() as connection:
-            result = connection.execute(text(query), params or {})
+            cursor_result = connection.execute(text(query), params)
 
-            if not result.returns_rows:
-                return f"Success: {result.rowcount} rows affected"
+            if not cursor_result.returns_rows:
+                return f"Success: {cursor_result.rowcount} rows affected"
 
-            columns = result.keys()
-            all_rows = result.fetchall()
+            output, full_results = format_result(cursor_result)
 
-            if not all_rows:
-                return "No rows returned"
+            if full_results_message := save_full_results(full_results):
+                output.append(full_results_message)
 
-            # Format results and handle truncation if needed
-            row_displayed, output = format_results(columns, all_rows)
-
-            # Add summary and full results link
-            output += f"\nResult: {len(all_rows)} rows"
-            if row_displayed < len(all_rows):
-                output += " (output truncated)"
-
-            if full_results := save_full_results(all_rows, columns):
-                output += full_results
-
-            return output
+            return "\n".join(output)
     except Exception as e:
         return f"Error: {str(e)}"
 
