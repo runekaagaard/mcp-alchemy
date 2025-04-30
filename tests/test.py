@@ -1,4 +1,4 @@
-import shutil, os, difflib
+import shutil, os, difflib, sys
 
 from mcp_alchemy.server import *
 
@@ -61,7 +61,7 @@ ArtistId: 2
 Result: 2 rows
 """
 
-EQ2 = """
+BASE2 = """
 1. row
 CustomerId: 1
 FirstName: Luís
@@ -286,11 +286,15 @@ Phone: +1 (604) 688-2255
 Fax: +1 (604) 688-8756
 Email: jenniferp@rogers.ca
 SupportRepId: 3
-
-Result: 59 rows (output truncated)
 """
 
-EQ2B = EQ2 + "Full result set url: https://cdn.jsdelivr.net/pyodide/claude-local-files/38d911af2df61f48ae5850491aaa32aff40569233d6aa2a870960a45108067ff.json (format: [[row1_value1, row1_value2, ...], [row2_value1, row2_value2, ...], ...]]) (ALWAYS prefer fetching this url in artifacts instead of hardcoding the values if at all possible)"
+EQ2 = BASE2 + """
+Result: showing first 15 rows (output truncated)
+"""
+
+EQ2B = BASE2 + """
+Result: 59 rows (output truncated)
+Full result set url: https://cdn.jsdelivr.net/pyodide/claude-local-files/38d911af2df61f48ae5850491aaa32aff40569233d6aa2a870960a45108067ff.json (format: [[row1_value1, row1_value2, ...], [row2_value1, row2_value2, ...], ...]]) (ALWAYS prefer fetching this url in artifacts instead of hardcoding the values if at all possible)"""
 
 EQ3 = """
 Error: (sqlite3.OperationalError) no such column: id
@@ -307,13 +311,19 @@ ArtistId: 3
 Result: 1 rows
 """
 
+EQ5 = """
+Error: (sqlite3.OperationalError) near "ZOOP": syntax error
+[SQL: ZOOP BOOP LOOP]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+"""
+
 EQMC1 = """
 1. row
 AlbumId: 1
 Title: For Those About To Rock We Salute You
 ArtistId: 1
 
-Result: 2 rows (output truncated)
+Result: showing first 1 rows (output truncated)
 """
 
 def h1(s):
@@ -323,9 +333,11 @@ def h1(s):
 
 def diff(wanted_result, actual_result):
     """Show git-like diff between two strings."""
-    return ''.join(
-        difflib.unified_diff(wanted_result.splitlines(keepends=True), actual_result.splitlines(keepends=True),
-                             fromfile='wanted_result', tofile='actual_result', n=3))
+    diff_lines = difflib.unified_diff(wanted_result.splitlines(keepends=True),
+                                      actual_result.splitlines(keepends=True), fromfile='wanted_result',
+                                      tofile='actual_result', n=3)
+
+    return ''.join(line.replace('\n', '') + '\n' for line in diff_lines)
 
 def test_func(func, tests):
     for args, wanted_result in tests:
@@ -339,6 +351,7 @@ def test_func(func, tests):
             print(actual_result)
             h1("Diff")
             print(diff(wanted_result, actual_result))
+            sys.exit(1)
 
 def main():
     test_func(get_db_info, [([], GDI1)])
@@ -354,6 +367,7 @@ def main():
           d(AlbumId=-1)], "No rows returned"),
         (["UPDATE Album SET AlbumId=:AlbumId WHERE AlbumId=:AlbumId",
           d(AlbumId=-1)], "Success: 0 rows affected"),
+        (["ZOOP BOOP LOOP"], EQ5),
     ])
 
     # EXECUTE_QUERY_MAX_CHARS setting

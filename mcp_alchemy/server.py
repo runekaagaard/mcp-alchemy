@@ -114,34 +114,48 @@ def execute_query(query: str, params: Optional[dict] = {}) -> str:
             return val.isoformat()
         return str(val)
 
-    def format_result(columns, rows):
+    def format_result(cursor_result):
         """Format rows in a clean vertical format"""
-        result = []
-        size, prev_i = 0, 0
+        result, full_results = [], []
+        size, i, did_truncate = 0, 0, False
 
-        for i, row in enumerate(rows, 1):
+        i = 0
+        while row := cursor_result.fetchone():
+            i += 1
+            if CLAUDE_LOCAL_FILES_PATH:
+                full_results.append(row)
+            if did_truncate:
+                continue
+
             sub_result = []
             sub_result.append(f"{i}. row")
-            for col, val in zip(columns, row):
+            for col, val in zip(cursor_result.keys(), row):
                 sub_result.append(f"{col}: {format_value(val)}")
 
             sub_result.append("")
 
-            size += sum(len(x) + 1 for x in sub_result)  # +1 is for the line ending
+            size += sum(len(x) + 1 for x in sub_result)  # +1 is for line endings
 
             if size > EXECUTE_QUERY_MAX_CHARS:
-                break
+                did_truncate = True
+                if not CLAUDE_LOCAL_FILES_PATH:
+                    break
+            else:
+                result.extend(sub_result)
 
-            result.extend(sub_result)
+        if i == 0:
+            return ["No rows returned"], full_results
+        elif did_truncate:
+            if CLAUDE_LOCAL_FILES_PATH:
+                result.append(f"Result: {i} rows (output truncated)")
+            else:
+                result.append(f"Result: showing first {i-1} rows (output truncated)")
+            return result, full_results
+        else:
+            result.append(f"Result: {i} rows")
+            return result, full_results
 
-            prev_i = i
-
-        truncation = " (output truncated)" if prev_i < len(all_rows) else ""
-        result.append(f"Result: {len(all_rows)} rows{truncation}")
-
-        return result
-
-    def save_full_results(rows, columns):
+    def save_full_results(full_results):
         """Save complete result set for Claude if configured"""
         if not CLAUDE_LOCAL_FILES_PATH:
             return None
@@ -149,7 +163,7 @@ def execute_query(query: str, params: Optional[dict] = {}) -> str:
         def serialize_row(row):
             return [format_value(val) for val in row]
 
-        data = [serialize_row(row) for row in rows]
+        data = [serialize_row(row) for row in full_results]
         file_hash = hashlib.sha256(json.dumps(data).encode()).hexdigest()
         file_name = f"{file_hash}.json"
 
@@ -164,21 +178,15 @@ def execute_query(query: str, params: Optional[dict] = {}) -> str:
     try:
         engine = get_engine(readonly=False)
         with engine.connect() as connection:
-            result = connection.execute(text(query), params)
+            cursor_result = connection.execute(text(query), params)
 
-            if not result.returns_rows:
-                return f"Success: {result.rowcount} rows affected"
+            if not cursor_result.returns_rows:
+                return f"Success: {cursor_result.rowcount} rows affected"
 
-            columns = result.keys()
-            all_rows = result.fetchall()
+            output, full_results = format_result(cursor_result)
 
-            if not all_rows:
-                return "No rows returned"
-
-            output = format_result(columns, all_rows)
-
-            if full_results := save_full_results(all_rows, columns):
-                output.append(full_results)
+            if full_results_message := save_full_results(full_results):
+                output.append(full_results_message)
 
             return "\n".join(output)
     except Exception as e:
