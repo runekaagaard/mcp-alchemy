@@ -230,6 +230,23 @@ Then set this in claude_desktop_config.json:
 ...
 ```
 
+## My Other LLM Projects
+
+- **[MCP Redmine](https://github.com/runekaagaard/mcp-redmine)** - Let Claude Desktop manage your Redmine projects and issues.
+- **[MCP Notmuch Sendmail](https://github.com/runekaagaard/mcp-notmuch-sendmail)** - Email assistant for Claude Desktop using notmuch.
+- **[Diffpilot](https://github.com/runekaagaard/diffpilot)** - Multi-column git diff viewer with file grouping and tagging.
+- **[Claude Local Files](https://github.com/runekaagaard/claude-local-files)** - Access local files in Claude Desktop artifacts.
+
+## MCP Directory Listings
+
+MCP Alchemy is listed in the following MCP directory sites and repositories:
+
+- [PulseMCP](https://www.pulsemcp.com/servers/runekaagaard-alchemy)
+- [MCP.so](https://mcp.so/server/mcp-alchemy)
+- [MCP Archive](https://mcp-archive.com/server/mcp-alchemy)
+- [Playbooks MCP](https://playbooks.com/mcp/runekaagaard-alchemy)
+- [Awesome MCP Servers](https://github.com/punkpeye/awesome-mcp-servers)
+
 ## Contributing
 
 Contributions are warmly welcomed! Whether it's bug reports, feature requests, documentation improvements, or code contributions - all input is valuable. Feel free to:
@@ -244,20 +261,3 @@ The goal is to make database interaction with Claude even better, and your insig
 ## License
 
 Mozilla Public License Version 2.0
-
-## My Other LLM Projects
-
-- **[MCP Redmine](https://github.com/runekaagaard/mcp-redmine)** - Let Claude Desktop manage your Redmine projects and issues.
-- **[MCP Notmuch Sendmail](https://github.com/runekaagaard/mcp-notmuch-sendmail)** - Email assistant for Claude Desktop using notmuch.
-- **[Diffpilot](https://github.com/runekaagaard/diffpilot)** - Multi-column git diff viewer with file grouping and tagging.
-- **[Claude Local Files](https://github.com/runekaagaard/claude-local-files)** - Access local files in Claude Desktop artifacts.
-
-## MCP Directory Listings
-
-MCP Alchemy is featured in the following MCP directory sites and repositories:
-
-- [PulseMCP](https://www.pulsemcp.com/servers/runekaagaard-alchemy)
-- [MCP.so](https://mcp.so/server/mcp-alchemy)
-- [MCP Archive](https://mcp-archive.com/server/mcp-alchemy)
-- [Playbooks MCP](https://playbooks.com/mcp/runekaagaard-alchemy)
-- [Awesome MCP Servers](https://github.com/punkpeye/awesome-mcp-servers)
