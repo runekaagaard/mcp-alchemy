@@ -1,12 +1,12 @@
 SHELL := /bin/bash
 .SHELLFLAGS := -ec
 
-PROJECT := $(shell sed -n 's/^name = "\(.*\)"/\1/p' pyproject.toml) # overloads as binary name, too
+PROJECT := $(shell grep '^name = ' pyproject.toml | cut -d '"' -f2)
 PACKAGE := $(shell echo $(PROJECT) | tr '-' '_')
 VERSION := $(shell date +%Y.%m.%d.%H%M%S | sed 's/\.0\+/\./g')
 
 version-bump:
-	sed -i "s/$(PROJECT)==[0-9.]*\"/$(PROJECT)==$(VERSION)\"/g" README.md
+	sed -i 's/"$(PROJECT)==[^"]*"/"$(PROJECT)==$(VERSION)"/g' README.md
 	sed -i "s/version = \"[^\"]*\"/version = \"$(VERSION)\"/" pyproject.toml
 	sed -i "s/VERSION = \"[^\"]*\"/VERSION = \"$(VERSION)\"/" $(PACKAGE)/server.py
 
@@ -52,3 +52,8 @@ package-run-prod:
 
 tests-run:
 	DB_URL="sqlite:///tests/Chinook_Sqlite.sqlite" .venv/bin/python -m tests.test
+
+debug-constants:
+	@echo "PROJECT='$(PROJECT)'"
+	@echo "PACKAGE='$(PACKAGE)'"
+	@echo "VERSION='$(VERSION)'"
