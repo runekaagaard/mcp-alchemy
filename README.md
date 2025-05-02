@@ -40,7 +40,7 @@ cached causing uv to raise a versioning error. Restarting the MCP client once ag
   "mcpServers": {
     "my_sqlite_db": {
       "command": "uvx",
-      "args": ["--from", "mcp-alchemy==2025.5.2.210210",
+      "args": ["--from", "mcp-alchemy==2025.5.2.210242",
                "--refresh-package", "mcp-alchemy", "mcp-alchemy"],
       "env": {
         "DB_URL": "sqlite:////absolute/path/to/database.db"
@@ -56,7 +56,7 @@ cached causing uv to raise a versioning error. Restarting the MCP client once ag
   "mcpServers": {
     "my_postgres_db": {
       "command": "uvx",
-      "args": ["--from", "mcp-alchemy==2025.5.2.210210", "--with", "psycopg2-binary",
+      "args": ["--from", "mcp-alchemy==2025.5.2.210242", "--with", "psycopg2-binary",
                "--refresh-package", "mcp-alchemy", "mcp-alchemy"],
       "env": {
         "DB_URL": "postgresql://user:password@localhost/dbname"
@@ -72,7 +72,7 @@ cached causing uv to raise a versioning error. Restarting the MCP client once ag
   "mcpServers": {
     "my_mysql_db": {
       "command": "uvx",
-      "args": ["--from", "mcp-alchemy==2025.5.2.210210", "--with", "pymysql",
+      "args": ["--from", "mcp-alchemy==2025.5.2.210242", "--with", "pymysql",
                "--refresh-package", "mcp-alchemy", "mcp-alchemy"],
       "env": {
         "DB_URL": "mysql+pymysql://user:password@localhost/dbname"
@@ -88,7 +88,7 @@ cached causing uv to raise a versioning error. Restarting the MCP client once ag
   "mcpServers": {
     "my_mssql_db": {
       "command": "uvx",
-      "args": ["--from", "mcp-alchemy==2025.5.2.210210", "--with", "pymssql",
+      "args": ["--from", "mcp-alchemy==2025.5.2.210242", "--with", "pymssql",
                "--refresh-package", "mcp-alchemy", "mcp-alchemy"],
       "env": {
         "DB_URL": "mssql+pymssql://user:password@localhost/dbname"
@@ -104,7 +104,7 @@ cached causing uv to raise a versioning error. Restarting the MCP client once ag
   "mcpServers": {
     "my_oracle_db": {
       "command": "uvx",
-      "args": ["--from", "mcp-alchemy==2025.5.2.210210", "--with", "cx_oracle",
+      "args": ["--from", "mcp-alchemy==2025.5.2.210242", "--with", "cx_oracle",
                "--refresh-package", "mcp-alchemy", "mcp-alchemy"],
       "env": {
         "DB_URL": "oracle+cx_oracle://user:password@localhost/dbname"
@@ -120,7 +120,7 @@ cached causing uv to raise a versioning error. Restarting the MCP client once ag
   "mcpServers": {
     "my_cratedb": {
       "command": "uvx",
-      "args": ["--from", "mcp-alchemy==2025.5.2.210210", "--with", "sqlalchemy-cratedb>=0.42.0.dev1",
+      "args": ["--from", "mcp-alchemy==2025.5.2.210242", "--with", "sqlalchemy-cratedb>=0.42.0.dev1",
                "--refresh-package", "mcp-alchemy", "mcp-alchemy"],
       "env": {
         "DB_URL": "crate://user:password@localhost:4200/?schema=testdrive"
