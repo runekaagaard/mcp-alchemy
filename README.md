@@ -242,7 +242,7 @@ Then set this in claude_desktop_config.json:
 MCP Alchemy is listed in the following MCP directory sites and repositories:
 
 - [PulseMCP](https://www.pulsemcp.com/servers/runekaagaard-alchemy)
-- [Glama] (https://glama.ai/mcp/servers/@runekaagaard/mcp-alchemy)
+- [Glama](https://glama.ai/mcp/servers/@runekaagaard/mcp-alchemy)
 - [MCP.so](https://mcp.so/server/mcp-alchemy)
 - [MCP Archive](https://mcp-archive.com/server/mcp-alchemy)
 - [Playbooks MCP](https://playbooks.com/mcp/runekaagaard-alchemy)
