@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/runekaagaard-mcp-alchemy-badge.png)](https://mseep.ai/app/runekaagaard-mcp-alchemy)
+
 # MCP Alchemy
 
 <a href="https://www.pulsemcp.com/servers/runekaagaard-alchemy"><img src="https://www.pulsemcp.com/badge/top-pick/runekaagaard-alchemy" width="400" alt="PulseMCP Badge"></a>
