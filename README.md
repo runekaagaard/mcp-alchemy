@@ -104,10 +104,10 @@ cached causing uv to raise a versioning error. Restarting the MCP client once ag
   "mcpServers": {
     "my_oracle_db": {
       "command": "uvx",
-      "args": ["--from", "mcp-alchemy==2025.5.2.210242", "--with", "cx_oracle",
+      "args": ["--from", "mcp-alchemy==2025.5.2.210242", "--with", "oracledb",
                "--refresh-package", "mcp-alchemy", "mcp-alchemy"],
       "env": {
-        "DB_URL": "oracle+cx_oracle://user:password@localhost/dbname"
+        "DB_URL": "oracle+oracledb://user:password@localhost/dbname"
       }
     }
   }
