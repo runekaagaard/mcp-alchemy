@@ -14,7 +14,7 @@ Let Claude be your database expert! MCP Alchemy connects Claude Desktop directly
 - Analyze large datasets and create reports
 - Claude Desktop Can analyse and create artifacts for very large datasets using [claude-local-files](https://github.com/runekaagaard/claude-local-files).
 
-Works with PostgreSQL, MySQL, MariaDB, SQLite, Oracle, MS SQL Server, CrateDB,
+Works with PostgreSQL, MySQL, MariaDB, SQLite, Oracle, MS SQL Server, CrateDB, Vertica,
 and a host of other [SQLAlchemy-compatible](https://docs.sqlalchemy.org/en/20/dialects/) databases.
 
 ![MCP Alchemy in action](https://raw.githubusercontent.com/runekaagaard/mcp-alchemy/refs/heads/main/screenshot.png)
@@ -132,11 +132,37 @@ cached causing uv to raise a versioning error. Restarting the MCP client once ag
 For connecting to CrateDB Cloud, use a URL like
 `crate://user:password@example.aks1.westeurope.azure.cratedb.net:4200?ssl=true`.
 
+### Vertica
+```json
+{
+  "mcpServers": {
+    "my_vertica_db": {
+      "command": "uvx",
+      "args": ["--from", "mcp-alchemy==2025.5.2.210242", "--with", "vertica-python",
+               "--refresh-package", "mcp-alchemy", "mcp-alchemy"],
+      "env": {
+        "DB_URL": "vertica+vertica_python://user:password@localhost:5433/dbname",
+        "DB_ENGINE_OPTIONS": "{\"connect_args\": {\"ssl\": false}}"
+      }
+    }
+  }
+}
+```
+
 ## Environment Variables
 
 - `DB_URL`: SQLAlchemy [database URL](https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls) (required)
 - `CLAUDE_LOCAL_FILES_PATH`: Directory for full result sets (optional)
 - `EXECUTE_QUERY_MAX_CHARS`: Maximum output length (optional, default 4000)
+- `DB_ENGINE_OPTIONS`: JSON string containing additional SQLAlchemy engine options (optional)
+  ```json
+  {
+    "connect_args": {"ssl": false},  // Vertica example
+    "isolation_level": null,         // Disable isolation level
+    "pool_size": 5                   // Custom pool size
+  }
+  ```
+  Note: When `DB_ENGINE_OPTIONS` is not set, the default behavior includes `isolation_level='AUTOCOMMIT'` for backward compatibility.
 
 ## API
 

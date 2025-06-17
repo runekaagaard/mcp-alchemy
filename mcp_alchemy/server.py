@@ -16,7 +16,23 @@ def tests_set_global(k, v):
 
 def get_engine(readonly=True):
     connection_string = os.environ['DB_URL']
-    return create_engine(connection_string, isolation_level='AUTOCOMMIT', execution_options={'readonly': readonly})
+    # Get base engine options
+    engine_options = {
+        'isolation_level': 'AUTOCOMMIT',
+        'execution_options': {'readonly': readonly}
+    }
+    
+    db_engine_options = os.environ.get('DB_ENGINE_OPTIONS')
+    
+    if db_engine_options:
+        try:
+            custom_options = json.loads(db_engine_options)
+            engine_options.update(custom_options)
+            
+        except json.JSONDecodeError:
+            get_logger(__name__).warning("Invalid DB_ENGINE_OPTIONS JSON, ignoring")
+        
+    return create_engine(connection_string, **engine_options)
 
 def get_db_info():
     engine = get_engine(readonly=True)
