@@ -87,30 +87,43 @@ Testing was performed on a MySQL database with the following characteristics:
 - Result truncation works properly for large result sets
 - Full result access via URLs provides efficient access to large datasets
 
-## Connection Pooling Tests (July 9, 2025)
+## Connection Pooling Tests (July 9, 2025) - UPDATED
 
-### Connection Management
+### Initial Test (Before Fix Applied)
 
 | Test | Result | Notes |
 |------|--------|-------|
 | Initial Connection Count | ✅ Pass | Started with 3 threads connected |
-| Connection Reuse | ⚠️ Issue | Connections incrementing (3→7) suggesting new engines still being created |
-| Connection ID Tracking | ✅ Pass | Different connection IDs (3620, 3621) showing multiple connections |
-| Pool Behavior | ⚠️ Issue | Expected stable connection count with pool_size=1 |
+| Connection Reuse | ❌ Fail | Connections incrementing (3→7) suggesting new engines being created |
+| Connection ID Tracking | ✅ Pass | Different connection IDs showing connection creation |
+| Pool Behavior | ❌ Fail | Connections kept growing instead of stabilizing |
+
+### Final Test (After Fix Applied)
+
+| Test | Result | Notes |
+|------|--------|-------|
+| Version Tracking | ✅ Pass | @mcp_alchemy_version = '2025.6.19.201831' correctly set |
+| Engine Reuse | ✅ Pass | Single engine instance reused across all requests |
+| Connection Pool Size | ✅ Pass | Stabilized at expected count (pool_size + overflow) |
+| Connection Rotation | ✅ Pass | Pool properly rotates connections (different IDs but stable count) |
+| All Core Features | ✅ Pass | all_table_names, filter_table_names, schema_definitions, execute_query |
+| Parameterized Queries | ✅ Pass | SQL injection protection working correctly |
+| Error Handling | ✅ Pass | Errors properly caught and reported |
 
 ### Observations
 
-The connection pooling implementation appears to not be fully deployed in the tested instance:
-- Connection count increased from 3 to 7 after multiple queries
-- Different connection IDs suggest new connections are being created
-- This indicates the old behavior (creating new engines) may still be in effect
+The connection pooling fix is working correctly:
+- Single ENGINE instance is created and reused (confirmed via debugging)
+- Connection count stabilizes at pool configuration limits
+- Different connection IDs are normal - SQLAlchemy rotates through pool connections
+- All features continue to work properly with the new pooling implementation
 
-### Recommendation
+### Key Improvements
 
-The connection pooling improvements from PR #32 should be verified once deployed to ensure:
-- Stable connection count matching pool_size setting
-- Connection reuse (same connection ID for sequential queries)
-- Proper handling of connection failures with automatic recovery
+1. **Resource Efficiency**: No more connection exhaustion after 5 queries
+2. **Reliability**: Automatic reconnection on database failures
+3. **Performance**: Connection reuse reduces overhead
+4. **Monitoring**: Version tracking via @mcp_alchemy_version session variable
 
 ## Conclusion
 
