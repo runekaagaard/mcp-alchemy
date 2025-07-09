@@ -155,14 +155,26 @@ For connecting to CrateDB Cloud, use a URL like
 - `CLAUDE_LOCAL_FILES_PATH`: Directory for full result sets (optional)
 - `EXECUTE_QUERY_MAX_CHARS`: Maximum output length (optional, default 4000)
 - `DB_ENGINE_OPTIONS`: JSON string containing additional SQLAlchemy engine options (optional)
-  ```json
-  {
-    "connect_args": {"ssl": false},  // Vertica example
-    "isolation_level": null,         // Disable isolation level
-    "pool_size": 5                   // Custom pool size
-  }
-  ```
-  Note: When `DB_ENGINE_OPTIONS` is not set, the default behavior includes `isolation_level='AUTOCOMMIT'` for backward compatibility.
+
+## Connection Pooling
+
+MCP Alchemy uses connection pooling optimized for long-running MCP servers. The default settings are:
+
+- `pool_pre_ping=True`: Tests connections before use to handle database timeouts and network issues
+- `pool_size=1`: Maintains 1 persistent connection (MCP servers typically handle one request at a time)
+- `max_overflow=2`: Allows up to 2 additional connections for burst capacity
+- `pool_recycle=3600`: Refreshes connections older than 1 hour (prevents timeout issues)
+- `isolation_level='AUTOCOMMIT'`: Ensures each query commits automatically
+
+These defaults work well for most databases, but you can override them via `DB_ENGINE_OPTIONS`:
+
+```json
+{
+  "DB_ENGINE_OPTIONS": "{\"pool_size\": 5, \"max_overflow\": 10, \"pool_recycle\": 1800}"
+}
+```
+
+For databases with aggressive timeout settings (like MySQL's 8-hour default), the combination of `pool_pre_ping` and `pool_recycle` ensures reliable connections.
 
 ## API
 
