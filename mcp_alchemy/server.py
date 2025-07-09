@@ -47,8 +47,16 @@ def get_connection():
         try:
             if ENGINE is None:
                 ENGINE = create_new_engine()
-
+                
             connection = ENGINE.connect()
+            
+            # Set version variable for databases that support it
+            try:
+                connection.execute(text(f"SET @mcp_alchemy_version = '{VERSION}'"))
+            except Exception:
+                # Some databases don't support session variables
+                pass
+            
             yield connection
 
         except Exception as e:
