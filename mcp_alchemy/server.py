@@ -21,13 +21,13 @@ def create_new_engine():
     """Create engine with MCP-optimized settings to handle long-running connections"""
     db_engine_options = os.environ.get('DB_ENGINE_OPTIONS')
     user_options = json.loads(db_engine_options) if db_engine_options else {}
-    
+
     # MCP-optimized defaults that can be overridden by user
     options = {
         'isolation_level': 'AUTOCOMMIT',
         # Test connections before use (handles MySQL 8hr timeout, network drops)
         'pool_pre_ping': True,
-        # Keep minimal connections (MCP typically handles one request at a time)  
+        # Keep minimal connections (MCP typically handles one request at a time)
         'pool_size': 1,
         # Allow temporary burst capacity for edge cases
         'max_overflow': 2,
@@ -36,36 +36,36 @@ def create_new_engine():
         # User can override any of the above
         **user_options
     }
-    
+
     return create_engine(os.environ['DB_URL'], **options)
 
 @contextmanager
 def get_connection():
     global ENGINE
-    
+
     try:
         try:
             if ENGINE is None:
                 ENGINE = create_new_engine()
-                
+
             connection = ENGINE.connect()
             yield connection
-            
+
         except Exception as e:
             logger.warning(f"First connection attempt failed: {e}")
-            
+
             # Database might have restarted or network dropped - start fresh
             if ENGINE is not None:
                 try:
                     ENGINE.dispose()
                 except Exception:
                     pass
-                    
+
             # One retry with fresh engine handles most transient failures
             ENGINE = create_new_engine()
             connection = ENGINE.connect()
             yield connection
-            
+
     except Exception as e:
         logger.exception("Failed to get database connection after retry")
         raise
@@ -154,7 +154,7 @@ def execute_query_description():
     if CLAUDE_LOCAL_FILES_PATH:
         parts.append("Claude Desktop may fetch the full result set via an url for analysis and artifacts.")
     parts.append(
-        "IMPORTANT: Always use the params parameter for query parameter substitution (e.g. 'WHERE id = :id' with "
+        "IMPORTANT: You MUST use the params parameter for query parameter substitution (e.g. 'WHERE id = :id' with "
         "params={'id': 123}) to prevent SQL injection. Direct string concatenation is a serious security risk.")
     parts.append(DB_INFO)
     return " ".join(parts)
