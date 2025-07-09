@@ -1,12 +1,11 @@
 import os, json, hashlib
-from typing import Optional
 from datetime import datetime, date
 from contextlib import contextmanager
 
-from mcp.server.fastmcp import FastMCP, Context
+from mcp.server.fastmcp import FastMCP
 from mcp.server.fastmcp.utilities.logging import get_logger
 
-from sqlalchemy import create_engine, inspect, text, exc
+from sqlalchemy import create_engine, inspect, text
 
 ### Helpers ###
 
