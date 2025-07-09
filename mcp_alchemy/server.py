@@ -23,21 +23,22 @@ def create_new_engine():
     db_engine_options = os.environ.get('DB_ENGINE_OPTIONS')
     user_options = json.loads(db_engine_options) if db_engine_options else {}
     
-    return create_engine(
-        os.environ['DB_URL'],
-        isolation_level='AUTOCOMMIT',
-        # MCP servers are long-running with infrequent queries, so we:
-        # - Test connections before use (handles MySQL 8hr timeout, network drops)
-        pool_pre_ping=True,
-        # - Keep minimal connections (MCP typically handles one request at a time)  
-        pool_size=1,
-        # - Allow temporary burst capacity for edge cases
-        max_overflow=2,
-        # - Force refresh connections older than 1hr (well under MySQL's 8hr default)
-        pool_recycle=3600,
-        # User overrides for specific database/environment needs
-        **user_options,
-    )
+    # MCP-optimized defaults that can be overridden by user
+    options = {
+        'isolation_level': 'AUTOCOMMIT',
+        # Test connections before use (handles MySQL 8hr timeout, network drops)
+        'pool_pre_ping': True,
+        # Keep minimal connections (MCP typically handles one request at a time)  
+        'pool_size': 1,
+        # Allow temporary burst capacity for edge cases
+        'max_overflow': 2,
+        # Force refresh connections older than 1hr (well under MySQL's 8hr default)
+        'pool_recycle': 3600,
+        # User can override any of the above
+        **user_options
+    }
+    
+    return create_engine(os.environ['DB_URL'], **options)
 
 @contextmanager
 def get_connection():
