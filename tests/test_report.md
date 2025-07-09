@@ -4,8 +4,8 @@
 
 This report documents the testing of MCP Alchemy, a tool that connects Claude Desktop directly to databases, allowing Claude to explore database structures, write and validate SQL queries, display relationships between tables, and analyze large datasets.
 
-**Test Date:** May 2, 2025  
-**MCP Alchemy Version:** 2025.5.2.210242  
+**Test Date:** July 9, 2025  
+**MCP Alchemy Version:** 2025.6.19.201831 (with connection pooling improvements)  
 **Database Engine:** MySQL 5.7.36
 
 ## Test Environment
@@ -86,6 +86,44 @@ Testing was performed on a MySQL database with the following characteristics:
 - Schema retrieval performs well even on large tables
 - Result truncation works properly for large result sets
 - Full result access via URLs provides efficient access to large datasets
+
+## Connection Pooling Tests (July 9, 2025) - UPDATED
+
+### Initial Test (Before Fix Applied)
+
+| Test | Result | Notes |
+|------|--------|-------|
+| Initial Connection Count | ✅ Pass | Started with 3 threads connected |
+| Connection Reuse | ❌ Fail | Connections incrementing (3→7) suggesting new engines being created |
+| Connection ID Tracking | ✅ Pass | Different connection IDs showing connection creation |
+| Pool Behavior | ❌ Fail | Connections kept growing instead of stabilizing |
+
+### Final Test (After Fix Applied)
+
+| Test | Result | Notes |
+|------|--------|-------|
+| Version Tracking | ✅ Pass | @mcp_alchemy_version = '2025.6.19.201831' correctly set |
+| Engine Reuse | ✅ Pass | Single engine instance reused across all requests |
+| Connection Pool Size | ✅ Pass | Stabilized at expected count (pool_size + overflow) |
+| Connection Rotation | ✅ Pass | Pool properly rotates connections (different IDs but stable count) |
+| All Core Features | ✅ Pass | all_table_names, filter_table_names, schema_definitions, execute_query |
+| Parameterized Queries | ✅ Pass | SQL injection protection working correctly |
+| Error Handling | ✅ Pass | Errors properly caught and reported |
+
+### Observations
+
+The connection pooling fix is working correctly:
+- Single ENGINE instance is created and reused (confirmed via debugging)
+- Connection count stabilizes at pool configuration limits
+- Different connection IDs are normal - SQLAlchemy rotates through pool connections
+- All features continue to work properly with the new pooling implementation
+
+### Key Improvements
+
+1. **Resource Efficiency**: No more connection exhaustion after 5 queries
+2. **Reliability**: Automatic reconnection on database failures
+3. **Performance**: Connection reuse reduces overhead
+4. **Monitoring**: Version tracking via @mcp_alchemy_version session variable
 
 ## Conclusion
 

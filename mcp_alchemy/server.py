@@ -1,8 +1,8 @@
 import os, json, hashlib
-from typing import Optional
 from datetime import datetime, date
+from contextlib import contextmanager
 
-from mcp.server.fastmcp import FastMCP, Context
+from mcp.server.fastmcp import FastMCP
 from mcp.server.fastmcp.utilities.logging import get_logger
 
 from sqlalchemy import create_engine, inspect, text
@@ -14,29 +14,73 @@ def tests_set_global(k, v):
 
 ### Database ###
 
-def get_engine(readonly=True):
-    connection_string = os.environ['DB_URL']
-    # Get base engine options
-    engine_options = {
-        'isolation_level': 'AUTOCOMMIT',
-        'execution_options': {'readonly': readonly}
-    }
-    
+logger = get_logger(__name__)
+ENGINE = None
+
+def create_new_engine():
+    """Create engine with MCP-optimized settings to handle long-running connections"""
     db_engine_options = os.environ.get('DB_ENGINE_OPTIONS')
-    
-    if db_engine_options:
+    user_options = json.loads(db_engine_options) if db_engine_options else {}
+
+    # MCP-optimized defaults that can be overridden by user
+    options = {
+        'isolation_level': 'AUTOCOMMIT',
+        # Test connections before use (handles MySQL 8hr timeout, network drops)
+        'pool_pre_ping': True,
+        # Keep minimal connections (MCP typically handles one request at a time)
+        'pool_size': 1,
+        # Allow temporary burst capacity for edge cases
+        'max_overflow': 2,
+        # Force refresh connections older than 1hr (well under MySQL's 8hr default)
+        'pool_recycle': 3600,
+        # User can override any of the above
+        **user_options
+    }
+
+    return create_engine(os.environ['DB_URL'], **options)
+
+@contextmanager
+def get_connection():
+    global ENGINE
+
+    try:
         try:
-            custom_options = json.loads(db_engine_options)
-            engine_options.update(custom_options)
+            if ENGINE is None:
+                ENGINE = create_new_engine()
+                
+            connection = ENGINE.connect()
             
-        except json.JSONDecodeError:
-            get_logger(__name__).warning("Invalid DB_ENGINE_OPTIONS JSON, ignoring")
-        
-    return create_engine(connection_string, **engine_options)
+            # Set version variable for databases that support it
+            try:
+                connection.execute(text(f"SET @mcp_alchemy_version = '{VERSION}'"))
+            except Exception:
+                # Some databases don't support session variables
+                pass
+            
+            yield connection
+
+        except Exception as e:
+            logger.warning(f"First connection attempt failed: {e}")
+
+            # Database might have restarted or network dropped - start fresh
+            if ENGINE is not None:
+                try:
+                    ENGINE.dispose()
+                except Exception:
+                    pass
+
+            # One retry with fresh engine handles most transient failures
+            ENGINE = create_new_engine()
+            connection = ENGINE.connect()
+            yield connection
+
+    except Exception as e:
+        logger.exception("Failed to get database connection after retry")
+        raise
 
 def get_db_info():
-    engine = get_engine(readonly=True)
-    with engine.connect():
+    with get_connection() as conn:
+        engine = conn.engine
         url = engine.url
         result = [
             f"Connected to {engine.dialect.name}",
@@ -66,17 +110,17 @@ get_logger(__name__).info(f"Starting MCP Alchemy version {VERSION}")
 
 @mcp.tool(description=f"Return all table names in the database separated by comma. {DB_INFO}")
 def all_table_names() -> str:
-    engine = get_engine()
-    inspector = inspect(engine)
-    return ", ".join(inspector.get_table_names())
+    with get_connection() as conn:
+        inspector = inspect(conn)
+        return ", ".join(inspector.get_table_names())
 
 @mcp.tool(
     description=f"Return all table names in the database containing the substring 'q' separated by comma. {DB_INFO}"
 )
 def filter_table_names(q: str) -> str:
-    engine = get_engine()
-    inspector = inspect(engine)
-    return ", ".join(x for x in inspector.get_table_names() if q in x)
+    with get_connection() as conn:
+        inspector = inspect(conn)
+        return ", ".join(x for x in inspector.get_table_names() if q in x)
 
 @mcp.tool(description=f"Returns schema and relation information for the given tables. {DB_INFO}")
 def schema_definitions(table_names: list[str]) -> str:
@@ -107,9 +151,9 @@ def schema_definitions(table_names: list[str]) -> str:
 
         return "\n".join(result)
 
-    engine = get_engine()
-    inspector = inspect(engine)
-    return "\n".join(format(inspector, table_name) for table_name in table_names)
+    with get_connection() as conn:
+        inspector = inspect(conn)
+        return "\n".join(format(inspector, table_name) for table_name in table_names)
 
 def execute_query_description():
     parts = [
@@ -118,7 +162,7 @@ def execute_query_description():
     if CLAUDE_LOCAL_FILES_PATH:
         parts.append("Claude Desktop may fetch the full result set via an url for analysis and artifacts.")
     parts.append(
-        "IMPORTANT: Always use the params parameter for query parameter substitution (e.g. 'WHERE id = :id' with "
+        "IMPORTANT: You MUST use the params parameter for query parameter substitution (e.g. 'WHERE id = :id' with "
         "params={'id': 123}) to prevent SQL injection. Direct string concatenation is a serious security risk.")
     parts.append(DB_INFO)
     return " ".join(parts)
@@ -195,8 +239,7 @@ def execute_query(query: str, params: dict = {}) -> str:
             " (ALWAYS prefer fetching this url in artifacts instead of hardcoding the values if at all possible)")
 
     try:
-        engine = get_engine(readonly=False)
-        with engine.connect() as connection:
+        with get_connection() as connection:
             cursor_result = connection.execute(text(query), params)
 
             if not cursor_result.returns_rows:
