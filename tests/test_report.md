@@ -4,8 +4,8 @@
 
 This report documents the testing of MCP Alchemy, a tool that connects Claude Desktop directly to databases, allowing Claude to explore database structures, write and validate SQL queries, display relationships between tables, and analyze large datasets.
 
-**Test Date:** May 2, 2025  
-**MCP Alchemy Version:** 2025.5.2.210242  
+**Test Date:** July 9, 2025  
+**MCP Alchemy Version:** 2025.6.19.201831 (with connection pooling improvements)  
 **Database Engine:** MySQL 5.7.36
 
 ## Test Environment
@@ -86,6 +86,31 @@ Testing was performed on a MySQL database with the following characteristics:
 - Schema retrieval performs well even on large tables
 - Result truncation works properly for large result sets
 - Full result access via URLs provides efficient access to large datasets
+
+## Connection Pooling Tests (July 9, 2025)
+
+### Connection Management
+
+| Test | Result | Notes |
+|------|--------|-------|
+| Initial Connection Count | ✅ Pass | Started with 3 threads connected |
+| Connection Reuse | ⚠️ Issue | Connections incrementing (3→7) suggesting new engines still being created |
+| Connection ID Tracking | ✅ Pass | Different connection IDs (3620, 3621) showing multiple connections |
+| Pool Behavior | ⚠️ Issue | Expected stable connection count with pool_size=1 |
+
+### Observations
+
+The connection pooling implementation appears to not be fully deployed in the tested instance:
+- Connection count increased from 3 to 7 after multiple queries
+- Different connection IDs suggest new connections are being created
+- This indicates the old behavior (creating new engines) may still be in effect
+
+### Recommendation
+
+The connection pooling improvements from PR #32 should be verified once deployed to ensure:
+- Stable connection count matching pool_size setting
+- Connection reuse (same connection ID for sequential queries)
+- Proper handling of connection failures with automatic recovery
 
 ## Conclusion
 
