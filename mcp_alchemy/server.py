@@ -1,6 +1,5 @@
 import os, json, hashlib
 from datetime import datetime, date
-from contextlib import contextmanager
 
 from mcp.server.fastmcp import FastMCP
 from mcp.server.fastmcp.utilities.logging import get_logger
@@ -39,7 +38,6 @@ def create_new_engine():
 
     return create_engine(os.environ['DB_URL'], **options)
 
-@contextmanager
 def get_connection():
     global ENGINE
 
@@ -47,17 +45,17 @@ def get_connection():
         try:
             if ENGINE is None:
                 ENGINE = create_new_engine()
-                
+
             connection = ENGINE.connect()
-            
+
             # Set version variable for databases that support it
             try:
                 connection.execute(text(f"SET @mcp_alchemy_version = '{VERSION}'"))
             except Exception:
                 # Some databases don't support session variables
                 pass
-            
-            yield connection
+
+            return connection
 
         except Exception as e:
             logger.warning(f"First connection attempt failed: {e}")
@@ -72,7 +70,8 @@ def get_connection():
             # One retry with fresh engine handles most transient failures
             ENGINE = create_new_engine()
             connection = ENGINE.connect()
-            yield connection
+
+            return connection
 
     except Exception as e:
         logger.exception("Failed to get database connection after retry")
