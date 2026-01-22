@@ -5,7 +5,9 @@ description = "A MCP server that connects to your database"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
+    "fastmcp>=2.14.3",
     "mcp[cli]>=1.2.0rc1",
+    "pyodbc>=5.3.0",
     "sqlalchemy>=2.0.36",
 ]
 authors = [

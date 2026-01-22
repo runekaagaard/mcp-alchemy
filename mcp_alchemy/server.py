@@ -1,20 +1,31 @@
-import os, json, hashlib
+import os
+import json
+import hashlib
 from datetime import datetime, date
-
-from mcp.server.fastmcp import FastMCP
-from mcp.server.fastmcp.utilities.logging import get_logger
-
 from sqlalchemy import create_engine, inspect, text
+from fastmcp import FastMCP
+from fastmcp.utilities.logging import get_logger
+
+# --- IMPORT YOUR NEW HELPERS ---
+try:
+    from .mssql_metadata import get_table_properties, get_documented_procedures
+except ImportError:
+    # Fallback if the file isn't found, preventing crash
+    get_table_properties = lambda c, t, s: {}
+    get_documented_procedures = lambda c: {}
+
 
 ### Helpers ###
 
 def tests_set_global(k, v):
     globals()[k] = v
 
+
 ### Database ###
 
 logger = get_logger(__name__)
 ENGINE = None
+
 
 def create_new_engine():
     """Create engine with MCP-optimized settings to handle long-running connections"""
@@ -37,6 +48,7 @@ def create_new_engine():
     }
 
     return create_engine(os.environ['DB_URL'], **options)
+
 
 def get_connection():
     global ENGINE
@@ -77,6 +89,7 @@ def get_connection():
         logger.exception("Failed to get database connection after retry")
         raise
 
+
 def get_db_info():
     with get_connection() as conn:
         engine = conn.engine
@@ -95,6 +108,7 @@ def get_db_info():
 
         return " ".join(result) + "."
 
+
 ### Constants ###
 
 VERSION = "2025.8.15.91819"
@@ -107,52 +121,147 @@ CLAUDE_LOCAL_FILES_PATH = os.environ.get('CLAUDE_LOCAL_FILES_PATH')
 mcp = FastMCP("MCP Alchemy")
 get_logger(__name__).info(f"Starting MCP Alchemy version {VERSION}")
 
-@mcp.tool(description=f"Return all table names in the database separated by comma. {DB_INFO}")
-def all_table_names() -> str:
+
+@mcp.tool(description=f"Return all tables, views, and documented stored procedures in the database. {DB_INFO}")
+def list_database_resources() -> str:
+    """Renamed from all_table_names to reflect it now returns Views and Procs too."""
     with get_connection() as conn:
         inspector = inspect(conn)
-        return ", ".join(inspector.get_table_names())
+        tables = inspector.get_table_names()
+        views = inspector.get_view_names()
+
+        # Fetch only procedures that have Extended Properties (The Allow List)
+        procs = list(get_documented_procedures(conn).keys())
+
+        output = []
+        if tables:
+            output.append("Tables: " + ", ".join(tables))
+        if views:
+            output.append("Views: " + ", ".join(views))
+        if procs:
+            output.append("Stored Procedures (Documented): " + ", ".join(procs))
+
+        return "\n\n".join(output)
+
 
 @mcp.tool(
-    description=f"Return all table names in the database containing the substring 'q' separated by comma. {DB_INFO}"
+    description=f"Filter tables, views, and documented stored procedures containing the substring 'q'. {DB_INFO}"
 )
-def filter_table_names(q: str) -> str:
+def filter_database_resources(q: str) -> str:
+    """Renamed from filter_table_names."""
     with get_connection() as conn:
         inspector = inspect(conn)
-        return ", ".join(x for x in inspector.get_table_names() if q in x)
 
-@mcp.tool(description=f"Returns schema and relation information for the given tables. {DB_INFO}")
-def schema_definitions(table_names: list[str]) -> str:
-    def format(inspector, table_name):
-        columns = inspector.get_columns(table_name)
-        foreign_keys = inspector.get_foreign_keys(table_name)
-        primary_keys = set(inspector.get_pk_constraint(table_name)["constrained_columns"])
-        result = [f"{table_name}:"]
+        # Get all resources
+        tables = [t for t in inspector.get_table_names() if q in t]
+        views = [v for v in inspector.get_view_names() if q in v]
 
-        # Process columns
-        show_key_only = {"nullable", "autoincrement"}
-        for column in columns:
-            if "comment" in column:
-                del column["comment"]
-            name = column.pop("name")
-            column_parts = (["primary key"] if name in primary_keys else []) + [str(
-                column.pop("type"))] + [k if k in show_key_only else f"{k}={v}" for k, v in column.items() if v]
-            result.append(f"    {name}: " + ", ".join(column_parts))
+        all_procs = list(get_documented_procedures(conn).keys())
+        procs = [p for p in all_procs if q in p]
 
-        # Process relationships
-        if foreign_keys:
-            result.extend(["", "    Relationships:"])
-            for fk in foreign_keys:
-                constrained_columns = ", ".join(fk['constrained_columns'])
-                referred_table = fk['referred_table']
-                referred_columns = ", ".join(fk['referred_columns'])
-                result.append(f"      {constrained_columns} -> {referred_table}.{referred_columns}")
+        output = []
+        if tables: output.append("Tables: " + ", ".join(tables))
+        if views: output.append("Views: " + ", ".join(views))
+        if procs: output.append("Stored Procedures: " + ", ".join(procs))
 
-        return "\n".join(result)
+        return "\n\n".join(output)
+
+
+@mcp.tool(
+    description=f"Returns schema, extended properties, and relation information for the given tables, views, or stored procedures. {DB_INFO}")
+def schema_definitions(resource_names: list[str]) -> str:
+    """Renamed argument to resource_names to imply it handles Procs too."""
+
+    def format_resource(inspector, resource_name, conn, documented_procs):
+        # CASE 1: It is a Stored Procedure
+        if resource_name in documented_procs:
+            proc_data = documented_procs[resource_name]
+            lines = [
+                f"Stored Procedure: {resource_name}",
+                f"  Description: {proc_data['description']}",
+                "  Parameters:"
+            ]
+            if proc_data['parameters']:
+                for param in proc_data['parameters']:
+                    lines.append(f"    - {param}")
+            else:
+                lines.append("    (No parameters)")
+            return "\n".join(lines)
+
+        # CASE 2: It is a Table or View
+        # Use existing logic but inject Extended Properties
+        try:
+            columns = inspector.get_columns(resource_name)
+            foreign_keys = inspector.get_foreign_keys(resource_name)
+
+            # Handle Primary Keys (Views might not have them)
+            try:
+                primary_keys = set(inspector.get_pk_constraint(resource_name)["constrained_columns"])
+            except:
+                primary_keys = set()
+
+            result = [f"{resource_name}:"]
+
+            # --- FETCH EXTENDED PROPERTIES ---
+            # Attempt to split schema (e.g., 'Sales.Orders' -> schema='Sales', table='Orders')
+            schema_name = 'dbo'
+            clean_name = resource_name
+            if '.' in resource_name:
+                parts = resource_name.split('.', 1)
+                schema_name = parts[0]
+                clean_name = parts[1]
+
+            props = get_table_properties(conn, clean_name, schema_name)
+
+            # --- NEW: Inject Table Description if it exists ---
+            if 'TABLE_DESCRIPTION' in props:
+                # We pop it so it doesn't get confused with a column name later
+                desc = props.pop('TABLE_DESCRIPTION')
+                result.append(f"  Description: {desc}")
+            # --------------------------------------------------
+
+            # Process columns
+            show_key_only = {"nullable", "autoincrement"}
+            for column in columns:
+                if "comment" in column:
+                    del column["comment"]
+                name = column.pop("name")
+
+                # Format the basic column definition
+                col_def_parts = (["primary key"] if name in primary_keys else []) + \
+                                [str(column.pop("type"))] + \
+                                [k if k in show_key_only else f"{k}={v}" for k, v in column.items() if v]
+
+                col_str = f"    {name}: " + ", ".join(col_def_parts)
+
+                # --- INJECT EXTENDED PROPERTY ---
+                if name in props:
+                    col_str += f"  -- [Note: {props[name]}]"
+                # --------------------------------
+
+                result.append(col_str)
+
+            # Process relationships
+            if foreign_keys:
+                result.extend(["", "    Relationships:"])
+                for fk in foreign_keys:
+                    constrained_columns = ", ".join(fk['constrained_columns'])
+                    referred_table = fk['referred_table']
+                    referred_columns = ", ".join(fk['referred_columns'])
+                    result.append(f"      {constrained_columns} -> {referred_table}.{referred_columns}")
+
+            return "\n".join(result)
+
+        except Exception as e:
+            return f"Error retrieval schema for '{resource_name}': {str(e)}"
 
     with get_connection() as conn:
         inspector = inspect(conn)
-        return "\n".join(format(inspector, table_name) for table_name in table_names)
+        # Fetch procs once to reuse for checking
+        all_documented_procs = get_documented_procedures(conn)
+
+        return "\n\n".join(format_resource(inspector, name, conn, all_documented_procs) for name in resource_names)
+
 
 def execute_query_description():
     parts = [
@@ -165,6 +274,7 @@ def execute_query_description():
         "params={'id': 123}) to prevent SQL injection. Direct string concatenation is a serious security risk.")
     parts.append(DB_INFO)
     return " ".join(parts)
+
 
 @mcp.tool(description=execute_query_description())
 def execute_query(query: str, params: dict = {}) -> str:
@@ -211,7 +321,7 @@ def execute_query(query: str, params: dict = {}) -> str:
             if CLAUDE_LOCAL_FILES_PATH:
                 result.append(f"Result: {i} rows (output truncated)")
             else:
-                result.append(f"Result: showing first {i-1} rows (output truncated)")
+                result.append(f"Result: showing first {i - 1} rows (output truncated)")
             return result, full_results
         else:
             result.append(f"Result: {i} rows")
@@ -253,8 +363,10 @@ def execute_query(query: str, params: dict = {}) -> str:
     except Exception as e:
         return f"Error: {str(e)}"
 
+
 def main():
     mcp.run()
+
 
 if __name__ == "__main__":
     main()
