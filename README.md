@@ -27,6 +27,10 @@ Ensure you have uv installed:
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
+## Hosted deployment
+
+A hosted deployment is available on [Fronteir AI](https://fronteir.ai/mcp/runekaagaard-mcp-alchemy).
+
 ## Usage with Claude Desktop
 
 Add to your `claude_desktop_config.json`. You need to add the appropriate database driver in the ``--with`` parameter.
