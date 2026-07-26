@@ -254,7 +254,18 @@ def execute_query(query: str, params: dict = {}) -> str:
         return f"Error: {str(e)}"
 
 def main():
-    mcp.run()
+    import argparse
+    parser = argparse.ArgumentParser(description="MCP Alchemy - Database MCP Server")
+    parser.add_argument("--transport", choices=["stdio", "sse"], default="stdio",
+                        help="Transport type (default: stdio)")
+    parser.add_argument("--host", default="127.0.0.1", help="Host for SSE transport (default: 127.0.0.1)")
+    parser.add_argument("--port", type=int, default=7000, help="Port for SSE transport (default: 7000)")
+    args = parser.parse_args()
+
+    if args.transport == "sse":
+        mcp.settings.host = args.host
+        mcp.settings.port = args.port
+    mcp.run(transport=args.transport)
 
 if __name__ == "__main__":
     main()
