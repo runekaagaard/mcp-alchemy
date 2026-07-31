@@ -5,8 +5,8 @@ description = "A MCP server that connects to your database"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "mcp[cli]>=1.9.0",
-    "sqlalchemy>=2.0.36",
+    "mcp[cli]==1.25.0",
+    "sqlalchemy==2.0.36",
 ]
 authors = [
   { name="Rune Kaagaard" },
@@ -37,6 +37,6 @@ package = true
 
 [dependency-groups]
 dev = [
-    "build>=1.2.2.post1",
-    "hatchling>=1.27.0",
+    "build==1.2.2.post1",
+    "hatchling==1.27.0",
 ]

@@ -458,14 +458,14 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "mcp", extras = ["cli"], specifier = ">=1.9.0" },
-    { name = "sqlalchemy", specifier = ">=2.0.36" },
+    { name = "mcp", extras = ["cli"], specifier = "==1.25.0" },
+    { name = "sqlalchemy", specifier = "==2.0.36" },
 ]
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "build", specifier = ">=1.2.2.post1" },
-    { name = "hatchling", specifier = ">=1.27.0" },
+    { name = "build", specifier = "==1.2.2.post1" },
+    { name = "hatchling", specifier = "==1.27.0" },
 ]
 
 [[package]]
