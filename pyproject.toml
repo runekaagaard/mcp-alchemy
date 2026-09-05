@@ -38,5 +38,6 @@ package = true
 [dependency-groups]
 dev = [
     "build==1.2.2.post1",
+    "pymysql==1.2.0",
     "hatchling==1.27.0",
 ]
