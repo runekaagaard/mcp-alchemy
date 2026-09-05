@@ -149,6 +149,40 @@ For connecting to CrateDB Cloud, use a URL like
 }
 ```
 
+### Docker
+
+A container image is published to GitHub Container Registry with common database drivers
+(PostgreSQL, MySQL/MariaDB, MS SQL Server, Oracle) preinstalled:
+
+```json
+{
+  "mcpServers": {
+    "my_db": {
+      "command": "docker",
+      "args": ["run", "-i", "--rm", "-e", "DB_URL",
+               "ghcr.io/runekaagaard/mcp-alchemy:latest"],
+      "env": {
+        "DB_URL": "postgresql://user:password@host.docker.internal/dbname"
+      }
+    }
+  }
+}
+```
+
+Or build it yourself with `docker build -t ghcr.io/runekaagaard/mcp-alchemy .`
+
+## Transports
+
+By default the server speaks stdio. It can also serve over HTTP for clients that connect that way:
+
+```bash
+# Recommended HTTP transport (serves on http://HOST:PORT/mcp)
+mcp-alchemy --transport streamable-http --host 127.0.0.1 --port 7000
+
+# Legacy SSE transport, for older clients (serves on http://HOST:PORT/sse)
+mcp-alchemy --transport sse --host 127.0.0.1 --port 7000
+```
+
 ## Environment Variables
 
 - `DB_URL`: SQLAlchemy [database URL](https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls) (required)

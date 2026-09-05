@@ -3,6 +3,8 @@ SHELL := /bin/bash
 
 PROJECT := $(shell grep '^name = ' pyproject.toml | cut -d '"' -f2)
 PACKAGE := $(shell echo $(PROJECT) | tr '-' '_')
+# Pass VERSION explicitly to sub-makes: it is timestamp-based, so a re-evaluation
+# in a sub-make would produce a different version than the one committed/tagged.
 VERSION := $(shell date +%Y.%m.%d.%H%M%S | sed 's/\.0\+/\./g')
 
 version-bump:
@@ -15,20 +17,22 @@ version-bump-claude-desktop:
 
 publish-test:
 	rm -rf dist/*
-	$(MAKE) version-bump
+	$(MAKE) version-bump VERSION=$(VERSION)
 	uv build
 	uv publish --token "$$PYPI_TOKEN_TEST" --publish-url https://test.pypi.org/legacy/
 	git checkout README.md pyproject.toml $(PACKAGE)/server.py
 
-publish-prod:
+publish-prod: tests-run
 	rm -rf dist/*
-	$(MAKE) version-bump
-	$(MAKE) version-bump-claude-desktop
+	$(MAKE) version-bump VERSION=$(VERSION)
+	$(MAKE) version-bump-claude-desktop VERSION=$(VERSION)
 	uv build
 	uv lock
 	uv publish --token "$$PYPI_TOKEN_PROD"
 	git commit -am "Published version $(VERSION) to PyPI"
+	git tag "v$(VERSION)"
 	git push
+	git push origin "v$(VERSION)"
 
 package-inspect-test:
 	rm -rf /tmp/test-$(PROJECT)

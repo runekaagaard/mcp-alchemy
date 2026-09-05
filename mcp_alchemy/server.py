@@ -1,8 +1,8 @@
 import os, json, hashlib
 from datetime import datetime, date
 
-from mcp.server.fastmcp import FastMCP
-from mcp.server.fastmcp.utilities.logging import get_logger
+from mcp.server.mcpserver import MCPServer
+from mcp.server.mcpserver.utilities.logging import get_logger
 
 from sqlalchemy import create_engine, inspect, text
 
@@ -104,7 +104,7 @@ CLAUDE_LOCAL_FILES_PATH = os.environ.get('CLAUDE_LOCAL_FILES_PATH')
 
 ### MCP ###
 
-mcp = FastMCP("MCP Alchemy")
+mcp = MCPServer("MCP Alchemy", version=VERSION)
 get_logger(__name__).info(f"Starting MCP Alchemy version {VERSION}")
 
 @mcp.tool(description=f"Return all table names in the database separated by comma. {DB_INFO}")
@@ -256,16 +256,17 @@ def execute_query(query: str, params: dict = {}) -> str:
 def main():
     import argparse
     parser = argparse.ArgumentParser(description="MCP Alchemy - Database MCP Server")
-    parser.add_argument("--transport", choices=["stdio", "sse"], default="stdio",
-                        help="Transport type (default: stdio)")
-    parser.add_argument("--host", default="127.0.0.1", help="Host for SSE transport (default: 127.0.0.1)")
-    parser.add_argument("--port", type=int, default=7000, help="Port for SSE transport (default: 7000)")
+    parser.add_argument("--transport", choices=["stdio", "streamable-http", "sse"], default="stdio",
+                        help="Transport type (default: stdio). streamable-http is the recommended HTTP "
+                             "transport, sse is supported for legacy clients.")
+    parser.add_argument("--host", default="127.0.0.1", help="Host for HTTP transports (default: 127.0.0.1)")
+    parser.add_argument("--port", type=int, default=7000, help="Port for HTTP transports (default: 7000)")
     args = parser.parse_args()
 
-    if args.transport == "sse":
-        mcp.settings.host = args.host
-        mcp.settings.port = args.port
-    mcp.run(transport=args.transport)
+    if args.transport == "stdio":
+        mcp.run(transport="stdio")
+    else:
+        mcp.run(transport=args.transport, host=args.host, port=args.port)
 
 if __name__ == "__main__":
     main()
