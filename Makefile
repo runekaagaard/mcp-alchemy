@@ -37,7 +37,7 @@ publish-prod: tests-run
 package-inspect-test:
 	rm -rf /tmp/test-$(PROJECT)
 	uv venv /tmp/test-$(PROJECT) --python 3.12
-	source /tmp/test-$(PROJECT)/bin/activate && uv pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ $(PROJECT)
+	source /tmp/test-$(PROJECT)/bin/activate && uv pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ --index-strategy unsafe-best-match $(PROJECT)
 	tree /tmp/test-$(PROJECT)/lib/python3.12/site-packages/$(PACKAGE)
 	source /tmp/test-$(PROJECT)/bin/activate && which $(PROJECT)
 
@@ -49,7 +49,7 @@ package-inspect-prod:
 	source /tmp/test-$(PROJECT)/bin/activate && which $(PROJECT)
 
 package-run-test:
-	uvx --default-index https://test.pypi.org/simple/ --index https://pypi.org/simple/ --from $(PROJECT) $(PROJECT)
+	uvx --index-strategy unsafe-best-match --default-index https://test.pypi.org/simple/ --index https://pypi.org/simple/ --from $(PROJECT) $(PROJECT)
 
 package-run-prod:
 	uvx --from $(PROJECT) $(PROJECT)
