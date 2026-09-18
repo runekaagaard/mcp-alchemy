@@ -2,9 +2,7 @@
 
 <a href="https://www.pulsemcp.com/servers/runekaagaard-alchemy"><img src="https://www.pulsemcp.com/badge/top-pick/runekaagaard-alchemy" width="400" alt="PulseMCP Badge"></a>
 
-**Status: Works great and is in daily use without any known bugs.**
-
-**Status2: I just added the package to PyPI and updated the usage instructions. Please report any issues :)**
+**Status: Actively maintained and in daily use. Tested releases are published to PyPI with git tags, and issues and pull requests are triaged regularly.**
 
 Let Claude be your database expert! MCP Alchemy connects Claude Desktop directly to your databases, allowing it to:
 
