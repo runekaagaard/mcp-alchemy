@@ -241,10 +241,16 @@ def execute_query(query: str, params: dict = {}) -> str:
         with get_connection() as connection:
             cursor_result = connection.execute(text(query), params)
 
-            if not cursor_result.returns_rows:
-                return f"Success: {cursor_result.rowcount} rows affected"
+            try:
+                if not cursor_result.returns_rows:
+                    return f"Success: {cursor_result.rowcount} rows affected"
 
-            output, full_results = format_result(cursor_result)
+                output, full_results = format_result(cursor_result)
+            finally:
+                # Always close the result: a truncated query leaves the cursor unexhausted, and on
+                # SQLite the active read statement holds a SHARED lock on the pooled connection,
+                # blocking all writers for the lifetime of the server (#40).
+                cursor_result.close()
 
             if full_results_message := save_full_results(full_results):
                 output.append(full_results_message)
