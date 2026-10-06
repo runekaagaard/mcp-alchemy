@@ -378,6 +378,24 @@ def main():
     ])
     tests_set_global("EXECUTE_QUERY_MAX_CHARS", tmp)
 
+    # Regression #40: a truncated query must not leave a read lock on the sqlite file
+    import sqlite3
+    tmp = EXECUTE_QUERY_MAX_CHARS
+    tests_set_global("EXECUTE_QUERY_MAX_CHARS", 100)
+    out = execute_query("SELECT * FROM Track")
+    assert "truncated" in out, out[-200:]
+    tests_set_global("EXECUTE_QUERY_MAX_CHARS", tmp)
+    writer = sqlite3.connect("tests/Chinook_Sqlite.sqlite", timeout=2)
+    try:
+        # Acquires an exclusive lock without modifying data; raises OperationalError if a reader lock leaked
+        writer.execute("BEGIN EXCLUSIVE")
+        writer.rollback()
+    except sqlite3.OperationalError as e:
+        print(f"Truncated query leaked a sqlite read lock: {e}")
+        sys.exit(1)
+    finally:
+        writer.close()
+
     # CLAUDE_LOCAL_FILES_PATH setting
     tmp = "/tmp/mcp-alchemy/claude-local-files"
     os.makedirs(tmp, exist_ok=True)
