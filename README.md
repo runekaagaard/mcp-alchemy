@@ -304,6 +304,7 @@ Then set this in claude_desktop_config.json:
 
 - **[MCP Redmine](https://github.com/runekaagaard/mcp-redmine)** - Let Claude Desktop manage your Redmine projects and issues.
 - **[MCP Notmuch Sendmail](https://github.com/runekaagaard/mcp-notmuch-sendmail)** - Email assistant for Claude Desktop using notmuch.
+- **[MCP Show-on-Kindle](https://github.com/runekaagaard/mcp-show-on-kindle)** - Copy a file to a Kindle running KOReader and open it on screen.
 - **[Diffpilot](https://github.com/runekaagaard/diffpilot)** - Multi-column git diff viewer with file grouping and tagging.
 - **[Claude Local Files](https://github.com/runekaagaard/claude-local-files)** - Access local files in Claude Desktop artifacts.
 
